@@ -768,9 +768,6 @@ static const struct sched_class wrr_sched_class = {
 	/* .next is Fair Scheduler class scheduler */
 	.next			= &fair_sched_class,
 
-	/* no enqueue/yield_task for idle tasks */
-	/* TODO: Add enqueue/yield task for WRR */
-
 	.enqueue_task 		= enqueue_task_wrr,
 
 	.yield_task		= yield_task_wrr,
