@@ -1808,6 +1808,12 @@ static void set_load_weight(struct task_struct *p)
 
 static void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
+	/*
+	if (p->sched_class == &sched_wrr_class)
+		printk("WRR Policy == %d\n", p->policy);
+	else
+		printk("Policy = %d\n", p->policy); */
+	/* printk("Policy = %d ", p->policy); */
 	update_rq_clock(rq);
 	sched_info_queued(p);
 	p->sched_class->enqueue_task(rq, p, flags);
@@ -2908,8 +2914,10 @@ void sched_fork(struct task_struct *p)
 	 */
 	p->prio = current->normal_prio;
 
+	/* We Want ALL - Non realtime Processes to default to using
+	 * WRR class  */
 	if (!rt_prio(p->prio))
-		p->sched_class = &fair_sched_class;
+		p->sched_class = &wrr_sched_class;
 
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);
@@ -8246,7 +8254,7 @@ void __init sched_init(void)
 	 * TODO:
 	 * -> Change this class to WRR ???
 	 */
-	current->sched_class = &fair_sched_class;
+	current->sched_class = &wrr_sched_class;
 
 
 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */

@@ -146,6 +146,7 @@ extern struct cred init_cred;
 			   .weight = 10,				\
 		           .time_slice = 100, 				\
 		           .time_left = 10  }, 				\
+	/*.sched_class 	= &wrr_sched_class, */				\
 	.cpus_allowed	= CPU_MASK_ALL,					\
 	.mm		= NULL,						\
 	.active_mm	= &init_mm,					\

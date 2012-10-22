@@ -181,7 +181,12 @@ static struct wrr_rq *sched_wrr_rq(struct rq *rq)
 /* Return the task_struct in which the given @wrr_entity is embedded inside */
 static struct task_struct *wrr_task_of(struct sched_wrr_entity *wrr_entity)
 {
-	return container_of(wrr_entity, struct task_struct, wrr);
+	return wrr_entity->task;
+	/*
+	if (wrr_entity->weight == 0) //This is the head entity
+	else
+		return container_of(wrr_entity, struct task_struct, wrr);
+	*/
 }
 
 /* Return the wrr_rq (run queue struct) in which the given enitity belongs */
@@ -307,11 +312,9 @@ static void check_preempt_curr_wrr(struct rq *rq, struct task_struct *p, int fla
 static struct task_struct *pick_next_task_wrr(struct rq *rq)
 {
 	/* TO be throughly tested. */
-	/*
-	if (printk_ratelimit(  ))
-		printk("We were called to schedule a task but we have not"
-			"implemnetedthe schedule yet!\n");
-	*/
+
+	/* if (printk_ratelimit(  ))
+		printk("We were called to schedule a WRR task !\n"); */
 
 	struct task_struct *p;
 	struct sched_wrr_entity *head_entity;
@@ -319,8 +322,22 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	struct list_head *head;
 	struct wrr_rq *wrr_rq =  &rq->wrr;
 
-	if( wrr_rq->nr_running <= 0) /* There are no runnable tasks */
+	/* There are no runnable tasks */
+
+	if (rq->nr_running <= 0)
 		return NULL;
+
+	/*
+	print_queue(&rq->wrr.run_queue);
+	printk("========\n"); */
+
+	/* if( wrr_rq->nr_running <= 0) {
+		if (printk_ratelimit())
+			printk("WRR NULL PICK TASK CALLED\n");
+		return NULL;
+	} else {
+		printk("GOOD TASK EXISTS\n");
+	} */
 
 	/* Pick the first element in the queue.
 	 * The item will automatically be re-queued back, in task_tick
@@ -331,6 +348,10 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	next_entity = list_entry(head->next, struct sched_wrr_entity, run_list);
 
 	p = wrr_task_of(next_entity);
+
+	if (p == NULL)
+		return p;
+
 	p->se.exec_start = rq->clock_task;
 
 	/* Recompute the time left + time slice value incase weight
@@ -341,6 +362,8 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	if (p->policy != SCHED_WRR)
 		printk("Warning : Scheduler WRONLY picked non-WRR task\n");
 
+
+	printk("Scheduling %s (%d)\n", p->comm, p->pid);
 
 	return p;
 
@@ -396,7 +419,7 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 static void
 enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
-
+	printk("WRR Enqeue Called: %s (%d)\n", p->comm, p->pid);
 	struct list_head *head;
 	struct sched_wrr_entity *new_entity;
 	struct sched_wrr_entity *wrr_entity;
@@ -467,6 +490,7 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 	/* Update the current run time statistics. */
 	update_curr_wrr(rq);
 
+
 	/*
 	 * each tick is worth 10 milliseconds.
 	 * this is based on way that sched_rt is implemented.
@@ -481,9 +505,11 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 		return;
 
 	/* Code Snippet below Measures how often ticks occur */
-	/* printk("Time: second=%ld\nnano_second=%ld\n",
-			now.tv_sec, now.tv_nsec); */
 
+	printk("%s", curr->comm);
+	printk("Test Time: second=%ld\nnano_second=%ld\n",
+			now.tv_sec, now.tv_nsec);
+	printk("\n");
 
 	/* the time_slice is in milliseconds and we need to
 	 * convert it to ticks units */

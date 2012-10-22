@@ -954,6 +954,8 @@ enqueue_task_rt(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct sched_rt_entity *rt_se = &p->rt;
 
+	/* printk(" | RT enq called\n"); */
+
 	if (flags & ENQUEUE_WAKEUP)
 		rt_se->timeout = 0;
 

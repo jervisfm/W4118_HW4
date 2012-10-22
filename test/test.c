@@ -253,7 +253,9 @@ static void test(mpz_t number, const char* weight_string)
 	do_nothing(); /* make the compiler shut up */
 	printf("Input Weight = %d\n", wt);
 	printf("PID of this Process: %d", getpid());
-	/*test_change();*/
+
+	print_scheduler();
+	test_change();
 
 	print_current_weight();
 
