@@ -6,10 +6,14 @@ INCLUDE = -I. -I../android-tegra-3.1/usr/include -I../android-tegra-3.1/include 
 LDFLAGS := -L../tools/gmp/lib -lgmp -lm -static $(INCLUDE)
 
 
-all: test
+all: test infinite
 
 test: test.c
 	$(CC) -o $@ $< $(CFLAGS) $(LDFLAGS)
+
+infinite: infinite_loop.c
+	$(CC) -o $@ $< $(CFLAGS) $(LDFLAGS)
+
 
 clean:
 	rm -f test.o test
@@ -31,4 +35,6 @@ install_%: $(all)
 	@echo [INSTALL] moving test binaries to $(ADB_TGT) [$(TARGET_DIR)]...
 	@adb $(ADB_OPT) remount
 	@adb $(ADB_OPT) push test $(TARGET_DIR)
+	@adb $(ADB_OPT) push infinite $(TARGET_DIR)
 	@adb $(ADB_OPT) shell chmod 6755 $(TARGET_DIR)/test
+	@adb $(ADB_OPT) shell chmod 6755 $(TARGET_DIR)/infinite

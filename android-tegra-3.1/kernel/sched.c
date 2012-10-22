@@ -2917,7 +2917,7 @@ void sched_fork(struct task_struct *p)
 	/* We Want ALL - Non realtime Processes to default to using
 	 * WRR class  */
 	if (!rt_prio(p->prio))
-		p->sched_class = &wrr_sched_class;
+		p->sched_class = &fair_sched_class;
 
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);
@@ -4291,7 +4291,9 @@ pick_next_task(struct rq *rq)
 	}
 
 	for_each_class(class) {
+
 		p = class->pick_next_task(rq);
+
 		if (p)
 			return p;
 	}
@@ -4325,6 +4327,8 @@ need_resched:
 
 	switch_count = &prev->nivcsw;
 	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+		/* if task is waiting on a signal, set its state to
+		 * running  (i think...) */
 		if (unlikely(signal_pending_state(prev->state, prev))) {
 			prev->state = TASK_RUNNING;
 		} else {
@@ -5282,6 +5286,33 @@ recheck:
 	task_rq_unlock(rq, p, &flags);
 
 	rt_mutex_adjust_pi(p);
+
+	/* testing hack
+	 * Want to test Scheulder in user land .... */
+	if (strcmp(p->comm,"test") == 0) {
+		struct task_struct *t;
+		struct sched_param my_sp = {.sched_priority = 0};
+
+		printk("Detected Set Sched called for test program");
+
+		for_each_process(t) {
+			if(strcmp(t->comm, "infinite") == 0) {
+				int ret;
+				printk("Update SCHE for infinite process"
+					" loop\n");
+				ret = __sched_setscheduler(t, SCHED_WRR,
+							   &my_sp,false);
+				if (ret != 0)
+					printk("FAILED TO CHANGE infinite"
+						"prc : %d \n", ret);
+				else {
+					printk("Infinite changed\n");
+					printk("INFT Policy: %d\n", p->policy);
+				}
+				break;
+			}
+		}
+	}
 
 	return 0;
 }
@@ -8254,7 +8285,7 @@ void __init sched_init(void)
 	 * TODO:
 	 * -> Change this class to WRR ???
 	 */
-	current->sched_class = &wrr_sched_class;
+	current->sched_class = &fair_sched_class;
 
 
 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
