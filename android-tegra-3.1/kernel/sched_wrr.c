@@ -475,6 +475,9 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 	 * */
 	update_curr_wrr(rq);
 	prev->se.exec_start = 0;
+
+	if (on_wrr_rq(&prev->wrr))
+		enqueue_task_wrr(rq, prev, 0);
 }
 
 
