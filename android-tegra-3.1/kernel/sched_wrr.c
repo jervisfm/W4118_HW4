@@ -37,6 +37,8 @@
  */
 
 
+
+
 #ifdef CONFIG_SMP
 static int
 select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
@@ -138,6 +140,27 @@ static unsigned int get_rr_interval_wrr(struct rq *rq, struct task_struct *task)
 	/* To be implemented */
 	return 0;
 }
+
+/* Set the SCHED_WRR weight of process, as identified by 'pid'.
+ * If 'pid' is 0, set the weight for the calling process.
+ * System call number 376.
+ */
+SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
+{
+	/* To be implemneted */
+	return -1;
+}
+
+
+/* Obtain the SCHED_WRR weight of a process as identified by 'pid'.
+ * If 'pid' is 0, return the weight of the calling process.
+ * System call number 377.*/
+SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
+{
+	/*To be implemented */
+	return -1;
+}
+
 
 /*
  * Simple, special scheduling class for the per-CPU wrr tasks:

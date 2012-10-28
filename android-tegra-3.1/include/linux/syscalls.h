@@ -778,6 +778,10 @@ asmlinkage long sys_newfstatat(int dfd, const char __user *filename,
 			       struct stat __user *statbuf, int flag);
 asmlinkage long sys_fstatat64(int dfd, const char __user *filename,
 			       struct stat64 __user *statbuf, int flag);
+/* System call for setting weights for SCHED_WRR schedule policy */
+asmlinkage long sys_sched_setweight(pid_t pid, int weight);
+asmlinkage long sys_sched_getweight(pid_t pid);
+
 asmlinkage long sys_readlinkat(int dfd, const char __user *path, char __user *buf,
 			       int bufsiz);
 asmlinkage long sys_utimensat(int dfd, const char __user *filename,
