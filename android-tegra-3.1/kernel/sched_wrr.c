@@ -46,19 +46,23 @@ select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 	return task_cpu(p); /* wrr tasks as never migrated */
 }
 #endif /* CONFIG_SMP */
+
 /*
- * Idle tasks are unconditionally rescheduled:
+ * This function checks if a task that entered the runnable state should
+   preempt the currently running task.
  */
 static void check_preempt_curr_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
 	/* TO be Implemented. */
 
 	/* Idle task impl:
+	 * Idle tasks are unconditionally rescheduled:
 	 * resched_task(rq->wrr);
 	 */
 
 }
 
+/* This function chooses the most appropriate task eligible to run next.*/
 static struct task_struct *pick_next_task_wrr(struct rq *rq)
 {
 	/* TO be Implemented. */
@@ -76,8 +80,8 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 }
 
 /*
- * It is not legal to sleep in the idle task - print a warning
- * message if some code attempts to do it:
+ * When a task is no longer runnable, this function is called.
+ * We should decrements the nr_running variable in wrr_rq struct.
  */
 static void
 dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
@@ -102,6 +106,8 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 
 }
 
+/* This function is basically just a dequeue followed by an enqueue, unless the
+   compat_yield sysctl is turned on */
 static void yield_task_wrr (struct rq *rq)
 {
 	/* To be implemented */
@@ -112,11 +118,15 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 	/* To be implemented */
 }
 
+/* This function is mostly called from time tick functions; it might lead to
+   process switch.  This drives the running preemption.*/
 static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 {
 	/* To be implemented */
 }
 
+/* This function is called when a task changes its scheduling class or changes
+   its task group.*/
 static void set_curr_task_wrr(struct rq *rq)
 {
 	/* To be implemented */
@@ -184,6 +194,12 @@ static const struct sched_class wrr_sched_class = {
 	.put_prev_task		= put_prev_task_wrr,
 
 #ifdef CONFIG_SMP
+	/*
+	 * TODO:
+	 * Add more methods here when we're working on adding
+	 * SMP support. sched_rt.c Should give a good example
+	 * to follow from.
+	 */
 	.select_task_rq		= select_task_rq_wrr,
 #endif
 

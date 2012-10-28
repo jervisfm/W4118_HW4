@@ -416,6 +416,12 @@ struct rt_rq {
 
 /* Weighted Round Robin class related fields in a run queue:  */
 struct wrr_rq {
+	/* *
+	 * TODO:
+	 * Add more related fields here.
+	 * Take a look at cfs_rq and rt_rq for examples.
+	 */
+	unsigned long nr_running;
 	struct rq *rq;
 };
 
