@@ -43,15 +43,23 @@ select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
  */
 static void check_preempt_curr_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
-	resched_task(rq->wrr);
+	/* TO be Implemented. */
+
+	/* Idle task impl:
+	 * resched_task(rq->wrr);
+	 */
+
 }
 
 static struct task_struct *pick_next_task_wrr(struct rq *rq)
 {
 	/* TO be Implemented. */
-	schedstat_inc(rq, sched_gowrr);
-	calc_load_account_wrr(rq);
 	return NULL;
+
+	/** IDLE Task Impl
+	 * schedstat_inc(rq, sched_gowrr);
+	 * calc_load_account_wrr(rq);
+	 */
 }
 
 /*
@@ -61,10 +69,13 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 static void
 dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
+	return ;
+	/* Idle task iMPLM
 	raw_spin_unlock_irq(&rq->lock);
 	printk(KERN_ERR "bad: scheduling from the wrr thread!\n");
 	dump_stack();
 	raw_spin_lock_irq(&rq->lock);
+	*/
 }
 
 /*
@@ -101,14 +112,14 @@ static void set_curr_task_wrr(struct rq *rq)
 static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 {
 	/* To be implemented */
-	BUG();
+
 }
 
 static void
 prio_changed_wrr(struct rq *rq, struct task_struct *p, int oldprio)
 {
 	/* To be implemented */
-	BUG();
+
 }
 
 static unsigned int get_rr_interval_wrr(struct rq *rq, struct task_struct *task)
