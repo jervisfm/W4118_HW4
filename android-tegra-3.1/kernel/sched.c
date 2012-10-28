@@ -414,6 +414,11 @@ struct rt_rq {
 #endif
 };
 
+/* Weighted Round Robin class related fields in a run queue:  */
+struct wrr_rq {
+	struct rq *rq;
+};
+
 #ifdef CONFIG_SMP
 
 /*
@@ -479,6 +484,7 @@ struct rq {
 
 	struct cfs_rq cfs;
 	struct rt_rq rt;
+	struct wrr_rq wrr;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	/* list of leaf cfs_rq on this cpu: */
@@ -2044,6 +2050,7 @@ static int irqtime_account_si_update(void)
 #include "sched_rt.c"
 #include "sched_autogroup.c"
 #include "sched_stoptask.c"
+#include "sched_wrr.c" /* Weighted Round Robin sched policy implmentation */
 #ifdef CONFIG_SCHED_DEBUG
 # include "sched_debug.c"
 #endif
