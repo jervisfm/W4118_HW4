@@ -2047,10 +2047,11 @@ static int irqtime_account_si_update(void)
 
 #include "sched_idletask.c"
 #include "sched_fair.c"
+#include "sched_wrr.c" /* Weighted Round Robin sched policy implmentation */
 #include "sched_rt.c"
 #include "sched_autogroup.c"
 #include "sched_stoptask.c"
-#include "sched_wrr.c" /* Weighted Round Robin sched policy implmentation */
+
 #ifdef CONFIG_SCHED_DEBUG
 # include "sched_debug.c"
 #endif

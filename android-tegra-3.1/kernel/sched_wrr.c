@@ -54,6 +54,11 @@ static void check_preempt_curr_wrr(struct rq *rq, struct task_struct *p, int fla
 static struct task_struct *pick_next_task_wrr(struct rq *rq)
 {
 	/* TO be Implemented. */
+	/*
+	if (printk_ratelimit(  ))
+		printk("We were called to schedule a task but we have not"
+			"implemnetedthe schedule yet!\n");
+	*/
 	return NULL;
 
 	/** IDLE Task Impl
@@ -133,8 +138,7 @@ static unsigned int get_rr_interval_wrr(struct rq *rq, struct task_struct *task)
  */
 static const struct sched_class wrr_sched_class = {
 	/* .next is Fair Scheduler class scheduler */
-
-
+	.next			= &fair_sched_class,
 
 	/* no enqueue/yield_task for idle tasks */
 	/* TODO: Add enqueue/yield task for WRR */
