@@ -28,6 +28,12 @@
  *    assigned to the CPU with the smallest total weight (i.e. sum of the
  *    weights of the jobs on the CPU's run queue).
  * 5) Add periodic load balancing every 500ms
+ * 6) Only tasks whose policy is set to SCHED_WRR should be considered for
+ *    selection by your this scheduler
+ * 7) The weight of a task and the SCHED_WRR scheduling flag should be
+ *    inherited by the child of any forking task.
+ * 8) If a process' scheduler is set to SCHED_WRR after previously being set to
+ *    another scheduler, its weight should be the default weight.
  */
 
 
