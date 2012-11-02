@@ -1193,6 +1193,18 @@ struct sched_entity {
 	struct cfs_rq		*my_q;
 #endif
 };
+/**
+ * This is our Entity to
+ * hold a TASK that uses the WRR policy.
+ * We make a a run queue list by embedding the list_head struct.
+ */
+struct sched_wrr_entity {
+	/* Make a list out of the items */
+	struct list_head run_list;
+	/* The task that is to be scheduled */
+	struct task_struct *task;
+	unsigned long time_slice;
+};
 
 struct sched_rt_entity {
 	struct list_head run_list;

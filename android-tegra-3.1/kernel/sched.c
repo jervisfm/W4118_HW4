@@ -414,6 +414,7 @@ struct rt_rq {
 #endif
 };
 
+
 /* Weighted Round Robin class related fields in a run queue:  */
 struct wrr_rq {
 	/* *
@@ -422,7 +423,12 @@ struct wrr_rq {
 	 * Take a look at cfs_rq and rt_rq for examples.
 	 */
 	unsigned long nr_running;
-	struct rq *rq;
+	/* the current size of the queue */
+	unsigned long size;
+	/* This struct is defined in sched.h  */
+	struct sched_wrr_entity run_queue;
+	/* A lock to protect the WRR Run queue list */
+	spinlock_t wrr_rq_lock;
 };
 
 #ifdef CONFIG_SMP
