@@ -132,6 +132,8 @@ static void set_curr_task_wrr(struct rq *rq)
 	/* To be implemented */
 }
 
+/* This function is called when a process has changed its scheduler and chosen
+ * to make this scheduler (WRR), its scheduler. */
 static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 {
 	/* To be implemented */
