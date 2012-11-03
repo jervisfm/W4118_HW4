@@ -123,8 +123,8 @@ static void requeue_task_wrr(struct rq *rq, struct task_struct *p)
 static void update_curr_wrr(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
-	struct sched_wrr_entity *wrr_entity = &curr->wrr;
-	/* struct wrr_rq *wrr_rq = wrr_rq_of_wrr_entity(wrr_entity); */
+	/* struct sched_wrr_entity *wrr_entity = &curr->wrr;
+	 struct wrr_rq *wrr_rq = wrr_rq_of_wrr_entity(wrr_entity); */
 
 	u64 delta_exec;
 
@@ -332,7 +332,7 @@ static void set_curr_task_wrr(struct rq *rq)
 
 	p->se.exec_start = rq->clock_task;
 
-	rq->wrr->curr = &p->wrr;
+	rq->wrr.curr = &p->wrr;
 }
 
 /* This function is called when a running process has changed its scheduler
