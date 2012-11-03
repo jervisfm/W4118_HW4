@@ -305,12 +305,16 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 		/* Set rescheduler for later since this function
 		 * is called during a timer interrupt */
 		set_tsk_need_resched(curr);
-	} else
-		; /* No need for a requeue
-		   * TODO:  Check to see if we need a
-		   * put a resched call here since the
-		   * we need to be running the same task.
-		   */
+	} else {
+		 /* No need for a requeue
+		  * TODO:  Check to see if we need a
+		  * put a resched call here since the
+		  * we need to be running the same task.
+		  */
+		if (printk_ratelimit(  ))
+			printk("No Need for a requeue !\n");
+
+	}
 }
 
 /* This function is called when a currently running task changes its
@@ -355,10 +359,10 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 	 */
 
 	if (rq->curr == p) { /* Case 2  */
-		printk("switch to wrr: Case 2 Happened");
+		printk("switch to wrr: Case 2 Happened\n");
 		enqueue_task_wrr(rq, p, NULL);
 	} else /* Assume case 1 */
-		printk("switch to wrr: Case 2 didn't happen");
+		printk("switch to wrr: Assuming Case 1\n");
 }
 
 static void
