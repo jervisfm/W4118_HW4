@@ -139,7 +139,7 @@ static void print_scheduler()
 	}
 
 	policy = get_policy_name(ret);
-	printf("Current Policy: %s", policy);
+	printf("Current Policy: %s\n", policy);
 	free(policy);
 }
 
@@ -192,8 +192,8 @@ static void test(mpz_t number, const char* weight_string)
 	printf("Weight = %d\n", wt);
 
 	test_change();
-
 	return;
+
 	printf("Finding Factors...\n");
 	find_factors(number);
 	printf("Factorization complete.\n");
