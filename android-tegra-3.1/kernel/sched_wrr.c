@@ -62,7 +62,7 @@ static void init_task_wrr(struct task_struct *p)
 	wrr_entity->weight = SCHED_WRR_DEFAULT_WEIGHT;
 	wrr_entity->time_slice =
 			SCHED_WRR_DEFAULT_WEIGHT * SCHED_WRR_TIME_QUANTUM;
-	wrr_entity->time_left = wrr_entity->time_slice;
+	wrr_entity->time_left = wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
 }
 
 
@@ -122,12 +122,12 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 static void
 enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
-	struct sched_wrr_entity *new_entity;
 	list_head *head;
-	struct wrr_rq *wrr_rq = &rq->wrr;
+	struct sched_wrr_entity *new_entity;
 	struct sched_wrr_entity *wrr_entity;
+	struct wrr_rq *wrr_rq = &rq->wrr;
 
-	spin_lock(wrr_rq->wrr_rq_lock);
+	/* spin_lock(wrr_rq->wrr_rq_lock); */
 
 	wrr_entity = &wrr_rq->run_queue;
 
@@ -142,7 +142,12 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	++wrr_rq->nr_running;
 	++wrr_rq->size;
 
-	spin_unlock(wrr_rq->wrr_rq_lock);
+	/*
+	 * TODO: Check and see if we need to use locks here.
+	 */
+
+
+	/* spin_unlock(wrr_rq->wrr_rq_lock); */
 }
 
 /* This function is basically just a dequeue followed by an enqueue, unless the
@@ -167,6 +172,20 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 {
 	/* To be implemented */
+	struct sched_wrr_entity *wrr_entity = curr->wrr;
+	struct wrr_rq *wrr_rq = &rq->wrr;
+
+	/*TODO: Continue from here ... Add timing statistics
+	 * i.e. reduce current time slice value.
+	 * sched_fair #558
+	 * sched_rt #660
+	 *
+	 * each tick is worth 10 milliseconds.
+	 * */
+	if(--wrr_entity->time_left) /* there is still time left */
+		return;
+
+	wrr_entity->time_left = wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
 }
 
 /* This function is called when a currently running task changes its

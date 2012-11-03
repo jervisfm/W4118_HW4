@@ -1784,6 +1784,8 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
 	if (--p->rt.time_slice)
 		return;
 
+	/* default time slice is 100 milliseconds. It looks
+	 * like each tick is worth 10 milliseconds. */
 	p->rt.time_slice = DEF_TIMESLICE;
 
 	/*

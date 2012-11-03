@@ -46,6 +46,10 @@
  */
 #define SCHED_WRR_DEFAULT_WEIGHT 10 /* Default wait of WRR task */
 #define SCHED_WRR_TIME_QUANTUM 10 /* Time quantum in milliseconds */
+/* Number to divide by to convert milliseconds to a task_tick call.
+ * i.e. the approx time in between time tick calls.
+ * See DEF_TIMESLICE to see how to get this number. */
+#define SCHED_WRR_TICK_FACTOR 10
 
 /* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */
 #define SCHED_RESET_ON_FORK     0x40000000
@@ -1215,13 +1219,15 @@ struct sched_wrr_entity {
 	 * which is NOT true for actual tasks that have 1 <= weight <=20*/
 	unsigned int weight;
 	/* the current time slice for this task
-	 * time_slice = weight * SCHED_WRR_TIME_QUANTUM */
+	 * time_slice = weight * SCHED_WRR_TIME_QUANTUM.
+	 * given in milliseconds.
+	 */
 	unsigned long time_slice;
 	/* the amount of time left for this task
-	 * on the currently assigned time slice*/
+	 * on the currently assigned time slice.
+	 * This should actually be in *10s of milliseconds*,
+	 * so divide time_slice value by 10. */
 	unsigned long time_left;
-
-	/* Note that time units are assumed to be in milliseconds */
 };
 
 struct sched_rt_entity {
