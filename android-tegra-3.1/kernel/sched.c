@@ -431,7 +431,7 @@ struct wrr_rq {
 	spinlock_t wrr_rq_lock;
 	/* Currently running entity on this WRR run queue
 	 * It's NULL if nothing is running */
-	sched_wrr_entity *curr;
+	struct sched_wrr_entity *curr;
 
 };
 
@@ -7975,7 +7975,7 @@ static void init_wrr_rq(struct wrr_rq *wrr_rq)
 
 	/* Initialize the run queue list */
 	wrr_entity = &wrr_rq->run_queue;
-	INIT_HEAD_LIST(&wrr_entity->run_list);
+	INIT_LIST_HEAD(&wrr_entity->run_list);
 
 	wrr_entity->task = NULL;
 	wrr_entity->weight = 0;

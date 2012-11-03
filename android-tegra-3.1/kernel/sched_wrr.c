@@ -39,7 +39,8 @@
  */
 
 
-
+/* Forward declaration. Definition found at bottom of this file */
+static const struct sched_class wrr_sched_class;
 
 #ifdef CONFIG_SMP
 static int
@@ -83,7 +84,7 @@ static struct wrr_rq *sched_wrr_rq(struct rq *rq)
 }
 
 /* Return the task_struct in which the given @wrr_entity is embedded inside */
-static struct task_struct *wrr_task_of(struct shced_wrr_entity *wrr_entity)
+static struct task_struct *wrr_task_of(struct sched_wrr_entity *wrr_entity)
 {
 	return container_of(wrr_entity, struct task_struct, wrr);
 }
@@ -104,7 +105,7 @@ static void requeue_task_wrr(struct rq *rq, struct task_struct *p)
 	struct list_head *head;
 	struct sched_wrr_entity *wrr_entity = sched_wrr_entity_of_task(p);
 	struct wrr_rq *wrr_rq = sched_wrr_rq(rq);
-	head = &wrr_rq->run_queue;
+	head = &wrr_rq->run_queue.run_list;
 
 	/* Check if the task is the only one in the run-queue.
 	 * In this case, we won't need to re-queue it can just
@@ -123,7 +124,7 @@ static void update_curr_wrr(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
 	struct sched_wrr_entity *wrr_entity = &curr->wrr;
-	struct wrr_rq *wrr_rq = wrr_rq_of_wrr_entity(wrr_entity);
+	/* struct wrr_rq *wrr_rq = wrr_rq_of_wrr_entity(wrr_entity); */
 
 	u64 delta_exec;
 
@@ -280,7 +281,6 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 {
 	/* Still to be tested  */
 	struct sched_wrr_entity *wrr_entity = &curr->wrr;
-	struct wrr_rq *wrr_rq = &rq->wrr;
 
 	/* Update the current run time statistics. */
 	update_curr_wrr(rq);
@@ -332,7 +332,7 @@ static void set_curr_task_wrr(struct rq *rq)
 
 	p->se.exec_start = rq->clock_task;
 
-	rq->wrr->curr = p;
+	rq->wrr->curr = &p->wrr;
 }
 
 /* This function is called when a running process has changed its scheduler
@@ -360,7 +360,7 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 
 	if (rq->curr == p) { /* Case 2  */
 		printk("switch to wrr: Case 2 Happened\n");
-		enqueue_task_wrr(rq, p, NULL);
+		enqueue_task_wrr(rq, p, 0);
 	} else /* Assume case 1 */
 		printk("switch to wrr: Assuming Case 1\n");
 }
