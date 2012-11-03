@@ -169,13 +169,11 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 			"implemnetedthe schedule yet!\n");
 	*/
 
-
 	struct task_struct *p;
 	struct sched_wrr_entity *head_entity;
 	struct sched_wrr_entity *next_entity;
 	struct list_head *head;
 	struct wrr_rq *wrr_rq =  &rq->wrr;
-
 
 	if( wrr_rq->nr_running <= 0) /* There are no runnable tasks */
 		return NULL;
@@ -266,6 +264,13 @@ static void yield_task_wrr (struct rq *rq)
 static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 {
 	/* To be implemented */
+	update_curr_wrr(rq);
+	prev->se.exec_start = 0;
+
+	/*
+	 * TODO:
+	 * Complete this following sched_rt.c #1187
+	 */
 }
 
 
@@ -320,6 +325,8 @@ static void set_curr_task_wrr(struct rq *rq)
 	 * it's updated in the __schedule() function
 	 */
 	struct task_struct *p = rq->curr;
+
+	p->se.exec_start = rq->clock_task;
 
 	rq->wrr->curr = p;
 }
