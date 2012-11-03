@@ -7,9 +7,61 @@
 #include <string.h>
 #include <gmp.h>
 #include <linux/unistd.h>
+#include <ctype.h>
+/* For the custom System calls  */
+#include "../android-tegra-3.1/arch/arm/include/asm/unistd.h"
 #include "prime.h"
 
+/* Allowable Weights values */
+#define MIN_WEIGHT 1
+#define MAX_WEIGHT 20
+
 static void find_factors(mpz_t base);
+
+
+static int is_number(char *string)
+{
+	int i = 0;
+
+	if (string == NULL)
+		return 0;
+
+	for (; string[i] != '\0'; ++i) {
+		if (!isdigit(string[i]))
+			return 0;
+	}
+	return 1;
+}
+
+/* Ensures that the given weight
+ * Return 0 if false, and 1 if true.
+ */
+static int is_valid_weight(char *string)
+{
+	/* Ensure that string is a valid number */
+	if (!is_number(string))
+		return 0;
+
+	/* Convert Weight to int type */
+	int wt = atoi(string);
+
+	/* Ensure weight is within range */
+
+	if (wt >= MIN_WEIGHT && wt <= MAX_WEIGHT)
+		return 1;
+	else
+		return 0;
+}
+
+static void test(mpz_t number, char* weight_string)
+{
+	int i;
+	int wt = atoi(weight_string);
+	printf("Hello World");
+	for(i = 0; i < 10; ++i) {
+		printf("%d\n", i);
+	}
+}
 
 int main(int argc, const char *argv[])
 {
@@ -25,9 +77,19 @@ int main(int argc, const char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	/* TODO: Handle weight argument here */
+	/* Ensure valid weight value */
+	if (!valid_weight(argv[2])) {
+		printf("Invalid Weight.Only integers 1-20 inclusive allowed\n");
+		return EXIT_FAILURE;
+	}
 
-	find_factors(largenum);
+
+	test(largenum, argv[2]);
+	/*
+	 * TODO:
+	 * - Handle weight argument here
+	 * - actually do the find factors */
+	// find_factors(largenum);
 
 	return EXIT_SUCCESS;
 }
