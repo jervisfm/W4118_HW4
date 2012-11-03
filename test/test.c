@@ -168,13 +168,11 @@ static void test_change()
 {
 	printf("Before Change:\n");
 	print_scheduler();
-
-	return;
-	/*
+	printf("Changing Scheduler...\n");
 	change_scheduler();
 	printf("After Change:\n");
 	print_scheduler();
-	*/
+
 }
 
 static void do_nothing()
