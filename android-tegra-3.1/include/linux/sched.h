@@ -44,7 +44,8 @@
 /*
  * Define some nice constants related to WRR Scheduling.
  */
-#define WRR_DEFAULT_WEIGHT 10
+#define SCHED_WRR_DEFAULT_WEIGHT 10 /* Default wait of WRR task */
+#define SCHED_WRR_TIME_QUANTUM 10 /* Time quantum in milliseconds */
 
 /* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */
 #define SCHED_RESET_ON_FORK     0x40000000
@@ -1213,11 +1214,14 @@ struct sched_wrr_entity {
 	 * For the head element, we set weight = 0,
 	 * which is NOT true for actual tasks that have 1 <= weight <=20*/
 	unsigned int weight;
-	/* the current time slice for this task */
+	/* the current time slice for this task
+	 * time_slice = weight * SCHED_WRR_TIME_QUANTUM */
 	unsigned long time_slice;
 	/* the amount of time left for this task
 	 * on the currently assigned time slice*/
 	unsigned long time_left;
+
+	/* Note that time units are assumed to be in milliseconds */
 };
 
 struct sched_rt_entity {

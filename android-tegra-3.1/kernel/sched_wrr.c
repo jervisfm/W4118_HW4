@@ -49,6 +49,21 @@ select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 }
 #endif /* CONFIG_SMP */
 
+static void init_task_wrr(struct task_struct *p)
+{
+	struct sched_wrr_entity *wrr_entity;
+	if (p == NULL)
+		return;
+
+	wrr_entity = &p->wrr;
+	wrr_entity->task = p;
+	wrr_entity->weight = SCHED_WRR_DEFAULT_WEIGHT;
+	wrr_entity->time_slice =
+			SCHED_WRR_DEFAULT_WEIGHT * SCHED_WRR_TIME_QUANTUM;
+	wrr_entity->time_left = wrr_entity->time_slice;
+}
+
+
 /*
  * This function checks if a task that entered the runnable state should
    preempt the currently running task.
@@ -148,7 +163,8 @@ static void set_curr_task_wrr(struct rq *rq)
 	rq->wrr->curr = p;
 }
 
-/* This function is called when a process has changed its scheduler and chosen
+/* This function is called when a
+ * *currently* running process has changed its scheduler and chosen
  * to make this scheduler (WRR), its scheduler.
  * */
 static void switched_to_wrr(struct rq *rq, struct task_struct *p)
