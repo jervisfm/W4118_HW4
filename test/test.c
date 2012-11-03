@@ -120,7 +120,8 @@ static char *get_policy_name(int policy)
 }
 
 /* Prints the currently assigned scheduler of this process */
-static void print_scheduler() {
+static void print_scheduler()
+{
 	int ret;
 	char *policy;
 	pid_t pid = getpid();
@@ -163,12 +164,35 @@ static void change_scheduler()
 	}
 }
 
+static void test_change()
+{
+	printf("Before Change:\n");
+	print_scheduler();
+	return;
+	/*
+	change_scheduler();
+	printf("After Change:\n");
+	print_scheduler();
+	*/
+}
 
+static void do_nothing()
+{
+	return;
+	is_wrr_policy(0);
+	print_scheduler();
+	change_scheduler();
+}
 
 static void test(mpz_t number, const char* weight_string)
 {
 	int wt = atoi(weight_string);
+	do_nothing(); /* make the compiler shut up */
 	printf("Weight = %d\n", wt);
+
+	test_change();
+
+	return;
 	printf("Finding Factors...\n");
 	find_factors(number);
 	printf("Factorization complete.\n");
