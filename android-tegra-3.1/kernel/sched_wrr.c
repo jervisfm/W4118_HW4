@@ -65,6 +65,84 @@ static void init_task_wrr(struct task_struct *p)
 	wrr_entity->time_left = wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
 }
 
+/* Return a pointer to the embedded sched_wrr_entity */
+static struct sched_wrr_entity *sched_wrr_entity_of_task(struct task_struct *p)
+{
+	if (p == NULL)
+		return NULL;
+
+	return &p->wrr;
+}
+
+/* Return a pointer to the sched_wrr specific run queue */
+static struct wrr_rq *sched_wrr_rq(struct rq *rq)
+{
+	if(rq == NULL)
+		return NULL;
+	return &rq->wrr;
+}
+
+/* Return the task_struct in which the given @wrr_entity is embedded inside */
+static struct task_struct *wrr_task_of(struct shced_wrr_entity *wrr_entity)
+{
+	return container_of(wrr_entity, struct task_struct, wrr);
+}
+
+/* Return the wrr_rq (run queue struct) in which the given enitity belongs */
+static struct wrr_rq *wrr_rq_of_wrr_entity(struct sched_wrr_entity *wrr_entity)
+{
+	struct task_struct *p = wrr_task_of(wrr_entity);
+	struct rq *rq = task_rq(p);
+
+	return &rq->wrr;
+}
+
+
+/* Helper method that requeues a task */
+static void requeue_task_wrr(struct rq *rq, struct task_struct *p)
+{
+	struct list_head *head;
+	struct sched_wrr_entity *wrr_entity = sched_wrr_entity_of_task(p);
+	struct wrr_rq *wrr_rq = sched_wrr_rq(rq);
+	head = &wrr_rq->run_queue;
+
+	/* Check if the task is the only one in the run-queue.
+	 * In this case, we won't need to re-queue it can just
+	 * leave it as it is. */
+	if (wrr_rq->size == 1)
+		return;
+
+	/* There is more than 1 task in queue, let's move this
+	 * one to the back of the queue */
+	list_move_tail(&wrr_entity->run_list, head);
+}
+
+/* Update the current runtime statistics. Modeled after
+ * update_curr_rt in sched_rt.c  */
+static void update_curr_wrr(struct rq *rq)
+{
+	struct task_struct *curr = rq->curr;
+	struct sched_wrr_entity *wrr_entity = &curr->wrr;
+	struct wrr_rq *wrr_rq = wrr_rq_of_wrr_entity(wrr_entity);
+
+	u64 delta_exec;
+
+	if(curr->sched_class != &wrr_sched_class)
+		return;
+
+	delta_exec = rq->clock_task - curr->se.exec_start;
+	if(unlikely((s64)delta_exec < 0))
+		delta_exec = 0;
+
+	schedstat_set(curr->se.statistics.exec_max,
+			max(curr->se.statistics.exec_max, delta_exec));
+
+	curr->se.sum_exec_runtime += delta_exec;
+	account_group_exec_runtime(curr, delta_exec);
+
+	curr->se.exec_start = rq->clock_task;
+	cpuacct_charge(curr, delta_exec);
+}
 
 /*
  * This function checks if a task that entered the runnable state should
@@ -167,13 +245,17 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 	/* To be implemented */
 }
 
+
 /* This function is mostly called from time tick functions; it might lead to
    process switch.  This drives the running preemption.*/
 static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 {
 	/* To be implemented */
-	struct sched_wrr_entity *wrr_entity = curr->wrr;
+	struct sched_wrr_entity *wrr_entity = &curr->wrr;
 	struct wrr_rq *wrr_rq = &rq->wrr;
+
+	/* Update the current run time statistics. */
+	update_curr_wrr(rq);
 
 	/*TODO: Continue from here ... Add timing statistics
 	 * i.e. reduce current time slice value.
@@ -185,7 +267,18 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 	if(--wrr_entity->time_left) /* there is still time left */
 		return;
 
+	/* the time_slice is in milliseconds and we need to
+	 * convert it to ticks units */
 	wrr_entity->time_left = wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
+
+	/* Requeue to the end of the queue if we are not the only
+	 * task on the queue (i.e. if there is more than 1 task) */
+	if(wrr_entity->run_list.prev != wrr_entity->run_list.next) {
+		requeue_task_wrr(rq, curr);
+		/* Set rescheduler for later since this function
+		 * is called during a timer interrupt */
+		set_tsk_need_resched(curr);
+	}
 }
 
 /* This function is called when a currently running task changes its
