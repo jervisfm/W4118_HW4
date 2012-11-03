@@ -200,7 +200,7 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 static void
 enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
-	list_head *head;
+	struct list_head *head;
 	struct sched_wrr_entity *new_entity;
 	struct sched_wrr_entity *wrr_entity;
 	struct wrr_rq *wrr_rq = &rq->wrr;
@@ -250,21 +250,20 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
    process switch.  This drives the running preemption.*/
 static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 {
-	/* To be implemented */
+	/* Still to be tested  */
 	struct sched_wrr_entity *wrr_entity = &curr->wrr;
 	struct wrr_rq *wrr_rq = &rq->wrr;
 
 	/* Update the current run time statistics. */
 	update_curr_wrr(rq);
 
-	/*TODO: Continue from here ... Add timing statistics
-	 * i.e. reduce current time slice value.
-	 * sched_fair #558
-	 * sched_rt #660
-	 *
+	/*
 	 * each tick is worth 10 milliseconds.
-	 * */
-	if(--wrr_entity->time_left) /* there is still time left */
+	 * this is based on way that sched_rt is implemented.
+	 * (Not exactly sure if this is a hard 10 milliseconds...)
+	 * TODO: confirm the actual exact tick rate.
+	 */
+	if (--wrr_entity->time_left) /* there is still time left */
 		return;
 
 	/* the time_slice is in milliseconds and we need to
@@ -273,12 +272,17 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 
 	/* Requeue to the end of the queue if we are not the only
 	 * task on the queue (i.e. if there is more than 1 task) */
-	if(wrr_entity->run_list.prev != wrr_entity->run_list.next) {
+	if (wrr_entity->run_list.prev != wrr_entity->run_list.next) {
 		requeue_task_wrr(rq, curr);
 		/* Set rescheduler for later since this function
 		 * is called during a timer interrupt */
 		set_tsk_need_resched(curr);
-	}
+	} else
+		; /* No need for a requeue
+		   * TODO:  Check to see if we need a
+		   * put a resched call here since the
+		   * we need to be running the same task.
+		   */
 }
 
 /* This function is called when a currently running task changes its
@@ -319,7 +323,7 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 	if (rq->curr == p) { /* Case 2  */
 		printk("switch to wrr: Case 2 Happened");
 		enqueue_task_wrr(rq, p, NULL);
-	} else
+	} else /* Assume case 1 */
 		printk("switch to wrr: Case 2 didn't happen");
 }
 
