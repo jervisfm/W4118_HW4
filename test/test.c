@@ -57,9 +57,9 @@ static void test(mpz_t number, const char* weight_string)
 {
 	int wt = atoi(weight_string);
 	printf("Weight = %d\n", wt);
-	printf("Finding Factors...");
+	printf("Finding Factors...\n");
 	find_factors(number);
-	printf("Factorization complete.");
+	printf("Factorization complete.\n");
 
 }
 
