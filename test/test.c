@@ -8,6 +8,9 @@
 #include <gmp.h>
 #include <linux/unistd.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sched.h> /* for std. scheduling system calls */
 /* For the custom System calls  */
 #include "../android-tegra-3.1/arch/arm/include/asm/unistd.h"
 #include "prime.h"
@@ -16,8 +19,16 @@
 #define MIN_WEIGHT 1
 #define MAX_WEIGHT 20
 
-static void find_factors(mpz_t base);
+/* Add the relevant definition policies in the scheduler */
+#define SCHED_NORMAL		0
+#define SCHED_FIFO		1
+#define SCHED_RR		2
+#define SCHED_BATCH		3
+/* SCHED_ISO: reserved but not implemented yet */
+#define SCHED_IDLE		5
+#define SCHED_WRR		6
 
+static void find_factors(mpz_t base);
 
 static int is_number(const char *string)
 {
@@ -53,6 +64,77 @@ static int valid_weight(const char *string)
 		return 0;
 }
 
+static int is_wrr_policy(int policy)
+{
+	return policy == SCHED_WRR;
+}
+
+static const char *get_policy_name(int policy)
+{
+	char *result = calloc(100, sizeof(char));
+	if (result == NULL) {
+		printf("Memory allocation failed in get_policy_name");
+		printf("Aborting...");
+		exit(1);
+	}
+
+	switch (policy) {
+		case SCHED_NORMAL:{
+			char *s = "CFS: Normal";
+			strncpy(result,s,strlength(s));
+			break;
+		}
+		case SCHED_FIFO:{
+			char *s = "RT: FIFO";
+			strncpy(result,s,strlength(s));
+			break;
+		}
+		case SCHED_RR:{
+			char *s = "RT: Round Robin";
+			strncpy(result,s,strlength(s));
+			break;
+		}
+		case SCHED_BATCH:{
+			char *s = "CFS: Batch";
+			strncpy(result,s,strlength(s));
+			break;
+		}
+		case SCHED_IDLE:{
+			char *s = "CFS: Idle";
+			strncpy(result,s,strlength(s));
+			break;
+		}
+		case SCHED_WRR:{
+			char *s = "Custom: Weighted Round Robin";
+			strncpy(result,s,strlength(s));
+			break;
+		}
+		default:
+			break;
+	}
+}
+
+/* Test Function to change scheduling policy*/
+static void change_scheduler()
+{
+	int ret;
+	struct sched_param param;
+	pid_t pid = getpid();
+	int policy = SCHED_WRR;
+	if (pid < 0) {
+		perror("Get PID call failed. Aborting...");
+		exit(-1);
+	}
+
+	printf("Changing Scheduler for PID %d", pid);
+
+	ret = sched_setscheduler(pid, policy, &param);
+	if (ret < 0) {
+		perror("Changing scheduler failed.");
+		exit(-1);
+	}
+}
+
 static void test(mpz_t number, const char* weight_string)
 {
 	int wt = atoi(weight_string);
@@ -60,6 +142,8 @@ static void test(mpz_t number, const char* weight_string)
 	printf("Finding Factors...\n");
 	find_factors(number);
 	printf("Factorization complete.\n");
+
+
 
 }
 
