@@ -226,7 +226,7 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 
 	update_curr_wrr(rq);
 	if (!on_wrr_rq(wrr_entity)) { /* Should not happen */
-		printl("Invalid Dequeue task for Process '%s' (%d)\n",
+		printk("Invalid Dequeue task for Process '%s' (%d)\n",
 			p->comm, p->pid);
 		BUG();
 		dump_stack();
