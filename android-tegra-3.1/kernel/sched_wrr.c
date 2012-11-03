@@ -97,6 +97,17 @@ static struct wrr_rq *wrr_rq_of_wrr_entity(struct sched_wrr_entity *wrr_entity)
 
 	return &rq->wrr;
 }
+/* Helper method that determines if the given entity is already
+ * in the run queue. Return 1 if true and 0 if false */
+static inline int on_wrr_rq(struct sched_wrr_entity *wrr_entity)
+{
+	/* If any item is on the wrr_rq, then the run
+	 * list will NOT be empty. */
+	if (list_empty(&wrr_entity->run_list))
+		return 0;
+	else
+		return 1;
+}
 
 
 /* Helper method that requeues a task */
@@ -205,7 +216,29 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 static void
 dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
-	return ;
+	/*
+	 * TODO: Check to see if we need
+	 * to have any locks here.
+	 */
+
+	struct sched_wrr_entity wrr_entity = &p->wrr;
+	struct wrr_rq *wrr_rq = wrr_rq_of_wrr_entity(wrr_entity);
+
+	update_curr_wrr(rq);
+	if (!on_wrr_rq(wrr_entity)) { /* Should not happen */
+		printl("Invalid Dequeue task for Process '%s' (%d)\n",
+			p->comm, p->pid);
+		BUG();
+		dump_stack();
+	}
+
+	/* Remove the task from the queue */
+	list_del(&wrr_entity->run_list);
+
+	/* update statistics counts */
+	--wrr_rq->nr_running;
+	--wrr_rq->size;
+
 	/* Idle task iMPLM
 	raw_spin_unlock_irq(&rq->lock);
 	printk(KERN_ERR "bad: scheduling from the wrr thread!\n");
