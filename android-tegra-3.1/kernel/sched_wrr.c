@@ -113,6 +113,11 @@ static void yield_task_wrr (struct rq *rq)
 	/* To be implemented */
 }
 
+/* This method should put the task back of the run queue.
+ * For example, it's called in set_scheduler system call that changes
+ * the scheduling policy for a task/process. (sched.c #5244)
+ *
+ * */
 static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 {
 	/* To be implemented */
