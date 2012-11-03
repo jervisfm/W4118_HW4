@@ -69,6 +69,7 @@ static int is_wrr_policy(int policy)
 	return policy == SCHED_WRR;
 }
 
+/* Get */
 static const char *get_policy_name(int policy)
 {
 	char *result = calloc(100, sizeof(char));
@@ -81,37 +82,41 @@ static const char *get_policy_name(int policy)
 	switch (policy) {
 		case SCHED_NORMAL:{
 			char *s = "CFS: Normal";
-			strncpy(result,s,strlength(s));
+			strncpy(result,s,strlen(s));
 			break;
 		}
 		case SCHED_FIFO:{
 			char *s = "RT: FIFO";
-			strncpy(result,s,strlength(s));
+			strncpy(result,s,strlen(s));
 			break;
 		}
 		case SCHED_RR:{
 			char *s = "RT: Round Robin";
-			strncpy(result,s,strlength(s));
+			strncpy(result,s,strlen(s));
 			break;
 		}
 		case SCHED_BATCH:{
 			char *s = "CFS: Batch";
-			strncpy(result,s,strlength(s));
+			strncpy(result,s,strlen(s));
 			break;
 		}
 		case SCHED_IDLE:{
 			char *s = "CFS: Idle";
-			strncpy(result,s,strlength(s));
+			strncpy(result,s,strlen(s));
 			break;
 		}
 		case SCHED_WRR:{
 			char *s = "Custom: Weighted Round Robin";
-			strncpy(result,s,strlength(s));
+			strncpy(result,s,strlen(s));
 			break;
 		}
-		default:
+		default: {
+			char *s = "Unknown Policy";
+			strncpy(result,s,strlen(s));
 			break;
+		}
 	}
+	return result;
 }
 
 /* Test Function to change scheduling policy*/
@@ -134,6 +139,8 @@ static void change_scheduler()
 		exit(-1);
 	}
 }
+
+
 
 static void test(mpz_t number, const char* weight_string)
 {
