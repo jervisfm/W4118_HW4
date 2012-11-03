@@ -7967,20 +7967,20 @@ static void init_cfs_rq(struct cfs_rq *cfs_rq)
  */
 static void init_wrr_rq(struct wrr_rq *wrr_rq)
 {
-	struct sched_wrr_entity *we;
+	struct sched_wrr_entity *wrr_entity;
 	wrr_rq->nr_running = 0;
 	wrr_rq->size = 0;
 	wrr_rq->curr = NULL;
 	spin_lock_init(&(wrr_rq->wrr_rq_lock));
 
 	/* Initialize the run queue list */
-	we = &wrr_rq->run_queue;
-	INIT_HEAD_LIST(&we->run_list);
+	wrr_entity = &wrr_rq->run_queue;
+	INIT_HEAD_LIST(&wrr_entity->run_list);
 
-	we->task = NULL;
-	we->weight = 0;
-	we->time_slice = 0;
-	we->time_left = 0;
+	wrr_entity->task = NULL;
+	wrr_entity->weight = 0;
+	wrr_entity->time_slice = 0;
+	wrr_entity->time_left = 0;
 }
 
 static void init_rt_rq(struct rt_rq *rt_rq, struct rq *rq)

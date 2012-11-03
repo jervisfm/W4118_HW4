@@ -122,7 +122,27 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 static void
 enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
+	struct sched_wrr_entity *new_entity;
+	list_head *head;
+	struct wrr_rq *wrr_rq = &rq->wrr;
+	struct sched_wrr_entity *wrr_entity;
 
+	spin_lock(wrr_rq->wrr_rq_lock);
+
+	wrr_entity = &wrr_rq->run_queue;
+
+	init_task_wrr(p); /* initializes the wrr_entity in task_struct */
+	new_entity = &p->wrr;
+
+	/* add it to the queue.*/
+	head = &wrr_entity->run_list;
+	list_add_tail(&new_entity->run_list, head);
+
+	/* update statistics counts */
+	++wrr_rq->nr_running;
+	++wrr_rq->size;
+
+	spin_unlock(wrr_rq->wrr_rq_lock);
 }
 
 /* This function is basically just a dequeue followed by an enqueue, unless the
