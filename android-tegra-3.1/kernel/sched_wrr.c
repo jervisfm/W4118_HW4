@@ -49,6 +49,8 @@ select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 }
 #endif /* CONFIG_SMP */
 
+/* Initializes the given task which is meant to be handled/processed
+ * by this scheduler */
 static void init_task_wrr(struct task_struct *p)
 {
 	struct sched_wrr_entity *wrr_entity;
@@ -163,16 +165,30 @@ static void set_curr_task_wrr(struct rq *rq)
 	rq->wrr->curr = p;
 }
 
-/* This function is called when a
- * *currently* running process has changed its scheduler and chosen
- * to make this scheduler (WRR), its scheduler.
+/* This function is called when a running process has changed its scheduler
+ * and chosen to make this scheduler (WRR), its scheduler.
  * */
 static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 {
-	/* To be implemented */
-	/* This should be equivalent to having a new process
-	 * starting up, so we should just call enqueue task here */
+	/* Still to be tested */
 
+	/* There are two cases here:
+	 * 1) switched_to called when current process changed the
+	 * policy of *another* non-running process to be SCHED_WRR.
+	 * enqueue WILL ALREADY have been called (sched.c #5259)
+	 * This will be an extremely unlikely condition, when we make SCHED_WRR
+	 * default system scheduler, since all processes will be SCHED_WRR
+	 *
+	 * 2) The current running process has decided to change its
+	 * scheduler to SCHED_WRR from something else, so enqueue it.
+	 * set_curr_task will have been called. But enqueue will not have been.
+	 */
+
+	if (rq->curr == p) { /* Case 2  */
+		printk("switch to wrr: Case 2 Happened");
+		enqueue_task_wrr(rq, p, NULL);
+	} else
+		printk("switch to wrr: Case 2 didn't happen");
 }
 
 static void
