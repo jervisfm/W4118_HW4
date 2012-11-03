@@ -168,6 +168,7 @@ static void test_change()
 {
 	printf("Before Change:\n");
 	print_scheduler();
+
 	return;
 	/*
 	change_scheduler();
