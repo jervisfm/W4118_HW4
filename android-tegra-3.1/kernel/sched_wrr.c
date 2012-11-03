@@ -221,7 +221,7 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	 * to have any locks here.
 	 */
 
-	struct sched_wrr_entity wrr_entity = &p->wrr;
+	struct sched_wrr_entity *wrr_entity = &p->wrr;
 	struct wrr_rq *wrr_rq = wrr_rq_of_wrr_entity(wrr_entity);
 
 	update_curr_wrr(rq);
