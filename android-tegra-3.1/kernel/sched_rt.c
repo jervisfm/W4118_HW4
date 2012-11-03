@@ -1803,7 +1803,7 @@ static void set_curr_task_rt(struct rq *rq)
 	p->se.exec_start = rq->clock_task;
 
 	/* The running task is never eligible for pushing */
-	dequeue_pushable_task(rq, p);
+	dequeue_pushable_task(rq, p); /* This method does NOTHING */
 }
 
 static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)

@@ -429,6 +429,10 @@ struct wrr_rq {
 	struct sched_wrr_entity run_queue;
 	/* A lock to protect the WRR Run queue list */
 	spinlock_t wrr_rq_lock;
+	/* Currently running entity on this WRR run queue
+	 * It's NULL if nothing is running */
+	sched_wrr_entity *curr;
+
 };
 
 #ifdef CONFIG_SMP
@@ -7966,6 +7970,7 @@ static void init_wrr_rq(struct wrr_rq *wrr_rq)
 	struct sched_wrr_entity *we;
 	wrr_rq->nr_running = 0;
 	wrr_rq->size = 0;
+	wrr_rq->curr = NULL;
 	spin_lock_init(&(wrr_rq->wrr_rq_lock));
 
 	/* Initialize the run queue list */

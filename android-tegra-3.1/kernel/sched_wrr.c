@@ -132,26 +132,38 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 	/* To be implemented */
 }
 
-/* This function is called when a task changes its scheduling class or changes
-   its task group.*/
+/* This function is called when a currently running task changes its
+ * scheduling class or changes its task group. For example, setscheduler
+ * calls this function, when a scheduling policy change is requested.
+ */
 static void set_curr_task_wrr(struct rq *rq)
 {
-	/* To be implemented */
+	/* we need to do update our 'curr' pointer.
+	 * so that we point to the running task.
+	 * rq->curr WILL point to the current running task on the rq.
+	 * it's updated in the __schedule() function
+	 */
+	struct task_struct *p = rq->curr;
+
+	rq->wrr->curr = p;
 }
 
 /* This function is called when a process has changed its scheduler and chosen
- * to make this scheduler (WRR), its scheduler. */
+ * to make this scheduler (WRR), its scheduler.
+ * */
 static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 {
 	/* To be implemented */
+	/* This should be equivalent to having a new process
+	 * starting up, so we should just call enqueue task here */
 
 }
 
 static void
 prio_changed_wrr(struct rq *rq, struct task_struct *p, int oldprio)
 {
-	/* To be implemented */
-
+	/* DO NOT need to implement. Scheduler has no
+	 * notion of priority.*/
 }
 
 static unsigned int get_rr_interval_wrr(struct rq *rq, struct task_struct *task)
