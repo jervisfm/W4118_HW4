@@ -7957,6 +7957,27 @@ static void init_cfs_rq(struct cfs_rq *cfs_rq)
 #endif
 }
 
+/* Custom function.
+ * Initializes the WRR_RQ (i.e run queue struct) in the general
+ * RQ struct. Called by init_sched
+ */
+static void init_wrr_rq(struct wrr_rq *wrr_rq)
+{
+	struct sched_wrr_entity *we;
+	wrr_rq->nr_running = 0;
+	wrr_rq->size = 0;
+	spin_lock_init(&(wrr_rq->wrr_rq_lock));
+
+	/* Initialize the run queue list */
+	we = &wrr_rq->run_queue;
+	INIT_HEAD_LIST(&we->run_list);
+
+	we->task = NULL;
+	we->weight = 0;
+	we->time_slice = 0;
+	we->time_left = 0;
+}
+
 static void init_rt_rq(struct rt_rq *rt_rq, struct rq *rq)
 {
 	struct rt_prio_array *array;
@@ -8114,6 +8135,7 @@ void __init sched_init(void)
 		rq->calc_load_update = jiffies + LOAD_FREQ;
 		init_cfs_rq(&rq->cfs);
 		init_rt_rq(&rq->rt, rq);
+		init_wrr_rq(&rq->wrr);
 #ifdef CONFIG_FAIR_GROUP_SCHED
 		root_task_group.shares = root_task_group_load;
 		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
@@ -8204,6 +8226,8 @@ void __init sched_init(void)
 
 	/*
 	 * During early bootup we pretend to be a normal task:
+	 * TODO:
+	 * -> Change this class to WRR ???
 	 */
 	current->sched_class = &fair_sched_class;
 

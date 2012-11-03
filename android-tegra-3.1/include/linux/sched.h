@@ -41,6 +41,11 @@
 #define SCHED_IDLE		5
 #define SCHED_WRR		6
 
+/*
+ * Define some nice constants related to WRR Scheduling.
+ */
+#define WRR_DEFAULT_WEIGHT 10
+
 /* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */
 #define SCHED_RESET_ON_FORK     0x40000000
 
@@ -1193,6 +1198,7 @@ struct sched_entity {
 	struct cfs_rq		*my_q;
 #endif
 };
+
 /**
  * This is our Entity to
  * hold a TASK that uses the WRR policy.
@@ -1203,7 +1209,9 @@ struct sched_wrr_entity {
 	struct list_head run_list;
 	/* The task that is to be scheduled */
 	struct task_struct *task;
-	/* the weight of this entity */
+	/* the weight of this entity
+	 * For the head element, we set weight = 0,
+	 * which is NOT true for actual tasks that have 1 <= weight <=20*/
 	unsigned int weight;
 	/* the current time slice for this task */
 	unsigned long time_slice;

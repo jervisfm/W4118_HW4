@@ -19,6 +19,8 @@
 /*
  * Main TODO:
  * 1) Make this the default scheduling policy for init and all of its descendants.
+ *    Note, May be easiest to have swapper policy be changed, so that kthread
+ *    uses WRR as well. This will help ensure system responsiveness.
  * 2) Support Multiprocessor systems, like the Nexus 7.
  * 3) If the weight of a task currently on a CPU is changed, it should finish
  *    its time quantum as it was before the weight change. i.e. increasing
