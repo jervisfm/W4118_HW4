@@ -168,7 +168,30 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 		printk("We were called to schedule a task but we have not"
 			"implemnetedthe schedule yet!\n");
 	*/
-	return NULL;
+
+
+	struct task_struct *p;
+	struct sched_wrr_entity *head_entity;
+	struct sched_wrr_entity *next_entity;
+	struct list_head *head;
+	struct wrr_rq *wrr_rq =  &rq->wrr;
+
+
+	if( wrr_rq->nr_running <= 0) /* There are no runnable tasks */
+		return NULL;
+
+	/* Pick the first element in the queue.
+	 * The item will automatically be re-queued back, in task_tick
+	 * funciton */
+	head_entity = &wrr_rq->run_queue;
+	head = &head_entity->run_list;
+
+	next_entity = list_entry(head->next, struct sched_wrr_entity, run_list);
+
+	p = wrr_task_of(next_entity);
+	p->se.exec_start = rq->clock_task;
+
+	return p;
 
 	/** IDLE Task Impl
 	 * schedstat_inc(rq, sched_gowrr);
@@ -303,6 +326,10 @@ static void set_curr_task_wrr(struct rq *rq)
 
 /* This function is called when a running process has changed its scheduler
  * and chosen to make this scheduler (WRR), its scheduler.
+ *
+ * It is important to note that switched won't be called if there was no
+ * actual change in the scheduler class. (e.g. if only the priority number
+ * alone changed)
  * */
 static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 {

@@ -1162,7 +1162,7 @@ static struct task_struct *pick_next_task_rt(struct rq *rq)
 
 	/* The running task is never eligible for pushing */
 	if (p)
-		dequeue_pushable_task(rq, p);
+		dequeue_pushable_task(rq, p); /* This does NOTHING */
 
 #ifdef CONFIG_SMP
 	/*
