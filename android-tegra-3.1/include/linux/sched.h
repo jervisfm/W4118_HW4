@@ -1203,7 +1203,13 @@ struct sched_wrr_entity {
 	struct list_head run_list;
 	/* The task that is to be scheduled */
 	struct task_struct *task;
+	/* the weight of this entity */
+	unsigned int weight;
+	/* the current time slice for this task */
 	unsigned long time_slice;
+	/* the amount of time left for this task
+	 * on the currently assigned time slice*/
+	unsigned long time_left;
 };
 
 struct sched_rt_entity {
