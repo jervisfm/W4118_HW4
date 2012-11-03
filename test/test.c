@@ -70,7 +70,7 @@ static int is_wrr_policy(int policy)
 }
 
 /* Get */
-static const char *get_policy_name(int policy)
+static char *get_policy_name(int policy)
 {
 	char *result = calloc(100, sizeof(char));
 	if (result == NULL) {
@@ -117,6 +117,29 @@ static const char *get_policy_name(int policy)
 		}
 	}
 	return result;
+}
+
+/* Prints the currently assigned scheduler of this process */
+static void print_scheduler() {
+	int ret;
+	char *policy;
+	pid_t pid = getpid();
+
+	if (pid < 0) {
+		perror("get pid call failed. aborting from print_scheduler...");
+		exit(-1);
+	}
+
+	ret = sched_getscheduler(pid);
+
+	if (ret < 0) {
+		perror("Getscheduler failed. Aborting...");
+		exit(-1);
+	}
+
+	policy = get_policy_name(ret);
+	printf("Current Policy: %s", policy);
+	free(policy);
 }
 
 /* Test Function to change scheduling policy*/
