@@ -19,7 +19,7 @@
 static void find_factors(mpz_t base);
 
 
-static int is_number(char *string)
+static int is_number(const char *string)
 {
 	int i = 0;
 
@@ -33,10 +33,10 @@ static int is_number(char *string)
 	return 1;
 }
 
-/* Ensures that the given weight
+/* Checks if given weight is valid.
  * Return 0 if false, and 1 if true.
  */
-static int is_valid_weight(char *string)
+static int valid_weight(const char *string)
 {
 	/* Ensure that string is a valid number */
 	if (!is_number(string))
@@ -53,14 +53,14 @@ static int is_valid_weight(char *string)
 		return 0;
 }
 
-static void test(mpz_t number, char* weight_string)
+static void test(mpz_t number, const char* weight_string)
 {
-	int i;
 	int wt = atoi(weight_string);
-	printf("Hello World");
-	for(i = 0; i < 10; ++i) {
-		printf("%d\n", i);
-	}
+	printf("Weight = %d\n", wt);
+	printf("Finding Factors...");
+	find_factors(number);
+	printf("Factorization complete.");
+
 }
 
 int main(int argc, const char *argv[])
