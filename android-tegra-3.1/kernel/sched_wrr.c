@@ -77,11 +77,11 @@ static void print_wrr_task(struct task_struct *p)
 		return;
 
 	wrr_entity = &p->wrr;
-	printf("Task Pid: %d\n", p->pid);
-	printf("Task Name: %s\n", p->comm);
-	printf("WRR Weight: %d\n", wrr_entity->weight);
-	printf("WRR Time_Left: %ld\n", wrr_entity->time_left);
-	printf("WRR Time Slice:%ld\n", wrr_entity->time_slice);
+	printk("Task Pid: %d\n", p->pid);
+	printk("Task Name: %s\n", p->comm);
+	printk("WRR Weight: %d\n", wrr_entity->weight);
+	printk("WRR Time_Left: %ld\n", wrr_entity->time_left);
+	printk("WRR Time Slice:%ld\n", wrr_entity->time_slice);
 
 }
 
@@ -562,18 +562,18 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 
 	/* Note, there is no Need to for user access controls.
 	 * All Users all allows to see anyone's weight.
-	 */
-
-	/*
+	 *
 	 * Further on ARM systems, pid_t is just an int
 	 * so, we can access it directly.
 	 */
-	if (pid < 0)
-		return -EINVAL;
 
 	int result = 0;
 	struct task_struct* task = NULL;
 	struct pid *pid_struct = NULL;
+
+	if (pid < 0)
+		return -EINVAL;
+
 	pid_struct = find_get_pid(pid);
 
 	if (pid_struct == NULL) { /* Invalid PID */
