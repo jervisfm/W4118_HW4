@@ -198,7 +198,7 @@ static void print_weight(pid_t pid)
 	int ret;
 	if (pid < 0)
 		return;
-	ret = syscall(__NR_sched_setweight, pid);
+	ret = syscall(__NR_sched_getweight, pid);
 	if (ret < 0)
 		return perror("set_weight call failed");
 	printf("Weight of Process %d is %d\n", pid, ret);
