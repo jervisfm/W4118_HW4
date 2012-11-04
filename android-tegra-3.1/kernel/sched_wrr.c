@@ -310,8 +310,6 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 static void
 enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
-	printk("ARGGG, Someone called Enqeueeee!");
-	dump_stack();
 
 	struct list_head *head;
 	struct sched_wrr_entity *new_entity;
@@ -348,26 +346,21 @@ static void yield_task_wrr (struct rq *rq)
 	/* To be implemented */
 }
 
-/* This method should put the task back of the run queue.
- * For example, it's called in set_scheduler system call that changes
- * the scheduling policy for a task/process. (sched.c #5244)
- *
+/* This method is really just a notification to us before
+ * potentially *another* task that we don't manage/schedule
+ * runs. As such, we don't need to do anything special.
  * */
 static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 {
-	/* To be implemented */
+
+	/* From testing, I have found this method is called
+	 * when a task is about to exit.
+	 * -> function cgroup_exit() in exit.c # 997
+	 * and in the main schedule function.
+	 * -> function schedule()  sched.c # 4335
+	 */
 	update_curr_wrr(rq);
 	prev->se.exec_start = 0;
-
-	if (printk_ratelimit(  )) {
-		printk("ARGGGG, Someone called me !!!\n");
-		dump_stack();
-	}
-
-	/*
-	 * TODO:
-	 * Complete this following sched_rt.c #1187
-	 */
 }
 
 
