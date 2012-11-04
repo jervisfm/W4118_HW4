@@ -571,9 +571,11 @@ static unsigned int get_rr_interval_wrr(struct rq *rq, struct task_struct *task)
 			SCHED_WRR_TICK_FACTOR ;
 }
 
-/* This method is called when a task is forked.
+/* This method is called (through our own mechanims)
+ * when a task is forked
+ * See sched.c #2903
  * @p = is the newly forked process.
- * See sched.c #2913 : p->sched_class->task_fork(p) */
+  */
 static void task_fork_wrr(struct task_struct *p)
 {
 	struct sched_wrr_entity *wrr_entity;
@@ -591,8 +593,6 @@ static void task_fork_wrr(struct task_struct *p)
 			wrr_entity->weight * SCHED_WRR_TIME_QUANTUM;
 	wrr_entity->time_left = wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
 
-	if (printk_ratelimit())
-		printk("Task ForKKKKK is called\n");
 }
 
 /* Set the SCHED_WRR weight of process, as identified by 'pid'.
@@ -682,7 +682,6 @@ static const struct sched_class wrr_sched_class = {
 
 	.set_curr_task          = set_curr_task_wrr,
 	.task_tick		= task_tick_wrr,
-	.task_fork		= task_fork_wrr,
 
 	.get_rr_interval	= get_rr_interval_wrr,
 

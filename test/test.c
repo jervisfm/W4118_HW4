@@ -216,7 +216,6 @@ static void print_current_weight()
 
 static void test_change()
 {
-	return;
 	printf("Before Change:\n");
 	print_scheduler();
 	printf("Changing Scheduler...\n");
@@ -242,6 +241,7 @@ static void test(mpz_t number, const char* weight_string)
 	do_nothing(); /* make the compiler shut up */
 	printf("Input Weight = %d\n", wt);
 
+	fork();
 	test_change();
 	print_current_weight();
 	printf("Finding Factors...\n");
