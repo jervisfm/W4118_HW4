@@ -220,7 +220,7 @@ static void test(mpz_t number, const char* weight_string)
 	printf("Weight = %d\n", wt);
 
 	test_change();
-
+	fork();
 	printf("Finding Factors...\n");
 	start_timer();
 	find_factors(number);
