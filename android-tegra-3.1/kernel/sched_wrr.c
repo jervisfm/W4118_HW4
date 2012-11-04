@@ -601,8 +601,18 @@ static void task_fork_wrr(struct task_struct *p)
  */
 SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 {
-	/* TODO: To be implemneted */
-	return -1;
+	/* We have the following restrictions:
+	 * -> Only administrator (root) can change
+	 * weight of any process.
+	 * -> Only administrator can increase the weight of process
+	 * -> A user who user owns the given process may only
+	 *    decrease the process weight.
+	 * -> It's an error to set weight on process that
+	 *    does not have the WRR_POLICY
+	 */
+
+
+
 }
 
 
@@ -630,18 +640,19 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 	if (pid < 0)
 		return -EINVAL;
 
+	/* Return weight of current process if PID is 0 */
+	if (pid == 0)
+		return current->wrr.weight;
+
 	pid_struct = find_get_pid(pid);
 
-	if (pid_struct == NULL) { /* Invalid PID */
+	if (pid_struct == NULL) { /* Invalid / Non-existent PID  */
 		return -EINVAL;
 	}
 
-	/* TODO: Question: Should we only return PID weights
-	 * for process only ? */
-
 	task = get_pid_task(pid_struct, PIDTYPE_PID);
 
-	print_wrr_task(task);
+	/* print_wrr_task(task); */
 
 	result = task->wrr.weight;
 
