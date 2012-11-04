@@ -38,6 +38,7 @@
  *    another scheduler, its weight should be the default weight.
  *
  *  Other Useful files
+ *  ====================
  *  -> init/main.c : Bootup process code
  *  -> include/linux/init_task.h :  Defines the INIT "swapper" task
  *
