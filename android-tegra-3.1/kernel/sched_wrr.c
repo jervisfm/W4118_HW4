@@ -100,7 +100,7 @@ static void print_wrr_task(struct task_struct *p)
  * Returns 1 if true and false otherwise.  */
 static int valid_weight(unsigned int weight)
 {
-	if(weight >= MIN_WEIGHT && weight <= MAX_WEIGHT)
+	if(weight >= SCHED_WRR_MIN_WEIGHT && weight <= SCHED_WRR_MAX_WEIGHT)
 		return 1;
 	else
 		return 0;
