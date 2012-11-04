@@ -2860,6 +2860,8 @@ static void __sched_fork(struct task_struct *p)
 
 /*
  * fork()/clone()-time setup:
+ * Note: @p argument - is the child process that has been forked/copied
+ * from the current running process.
  */
 void sched_fork(struct task_struct *p)
 {
@@ -2879,7 +2881,7 @@ void sched_fork(struct task_struct *p)
 	 */
 	if (unlikely(p->sched_reset_on_fork)) {
 		if (p->policy == SCHED_FIFO || p->policy == SCHED_RR) {
-			p->policy = SCHED_NORMAL;
+			p->policy = SCHED_WRR; /* Default Policy is WRR */
 			p->normal_prio = p->static_prio;
 		}
 
@@ -2896,6 +2898,7 @@ void sched_fork(struct task_struct *p)
 		p->sched_reset_on_fork = 0;
 	}
 
+
 	/*
 	 * Make sure we do not leak PI boosting priority to the child.
 	 */
@@ -2904,6 +2907,8 @@ void sched_fork(struct task_struct *p)
 	if (!rt_prio(p->prio))
 		p->sched_class = &fair_sched_class;
 
+	/* We will use this opportunity to initialize the relevant parameters
+	 * of WRR_entity */
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);
 
@@ -2915,6 +2920,9 @@ void sched_fork(struct task_struct *p)
 	 * Silence PROVE_RCU.
 	 */
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
+	/* TODO: This is where the CPU is assigned. Need to account for
+	 * CPU affinities if any. Also consider if we'd want to add task
+	 * to least worked CPU  */
 	set_task_cpu(p, cpu);
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 

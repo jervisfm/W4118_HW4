@@ -45,6 +45,13 @@
  *
  */
 
+/* Other Notes
+ * ===========
+ * -> InitTask has been updated so that when it starts, it starts with
+ * the default WRR params which are: Weight = 10, TimeLeft = 10,
+ * TimeSlice=100. This comes out to be 100milliseoncds slot.
+ *
+ */
 
 /* Forward declaration. Definition found at bottom of this file */
 static const struct sched_class wrr_sched_class;
@@ -86,6 +93,19 @@ static void print_wrr_task(struct task_struct *p)
 
 }
 
+/* Determines if the given weight is valid.
+ * i.e. within the range SCHED_WRR_MIN_WEIGHT AND
+ * SCHED_WRR_MAX_WEIGHTinclusive. These are defined in sched.h file.
+ * and currently are 1,20 respectively.
+ * Returns 1 if true and false otherwise.  */
+static int valid_weight(unsigned int weight)
+{
+	if(weight >= MIN_WEIGHT && weight <= MAX_WEIGHT)
+		return 1;
+	else
+		return 0;
+}
+
 /* Initializes the given task which is meant to be handled/processed
  * by this scheduler */
 static void init_task_wrr(struct task_struct *p)
@@ -96,10 +116,21 @@ static void init_task_wrr(struct task_struct *p)
 
 	wrr_entity = &p->wrr;
 	wrr_entity->task = p;
-	wrr_entity->weight = SCHED_WRR_DEFAULT_WEIGHT;
-	wrr_entity->time_slice =
+	/* Use Default Parameters if the weight is still the default,
+	 * or weight is invalid */
+	if (wrr_entity->weight == SCHED_WRR_DEFAULT_WEIGHT ||
+	    !valid_weight(wrr_entity->weight)) {
+		wrr_entity->weight = SCHED_WRR_DEFAULT_WEIGHT;
+		wrr_entity->time_slice =
 			SCHED_WRR_DEFAULT_WEIGHT * SCHED_WRR_TIME_QUANTUM;
-	wrr_entity->time_left = wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
+		wrr_entity->time_left =
+			wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
+	} else { /* Use the current weight value */
+		wrr_entity->time_slice =
+			wrr_entity->weight * SCHED_WRR_TIME_QUANTUM;
+		wrr_entity->time_left =
+			wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
+	}
 }
 
 /* Return a pointer to the embedded sched_wrr_entity */
@@ -540,6 +571,30 @@ static unsigned int get_rr_interval_wrr(struct rq *rq, struct task_struct *task)
 			SCHED_WRR_TICK_FACTOR ;
 }
 
+/* This method is called when a task is forked.
+ * @p = is the newly forked process.
+ * See sched.c #2913 : p->sched_class->task_fork(p) */
+static void task_fork_wrr(struct task_struct *p)
+{
+	struct sched_wrr_entity *wrr_entity;
+	if (p == NULL)
+		return;
+	wrr_entity = &p->wrr;
+	/* initalize the parameters that
+	 * should be different for the child process */
+	wrr_entity->task = p;
+
+	/* We keep the weight of the parent. We re-initialize
+	 * the other values that are derived from the parent's weight */
+
+	wrr_entity->time_slice =
+			wrr_entity->weight * SCHED_WRR_TIME_QUANTUM;
+	wrr_entity->time_left = wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
+
+	if (printk_ratelimit())
+		printk("Task ForKKKKK is called\n");
+}
+
 /* Set the SCHED_WRR weight of process, as identified by 'pid'.
  * If 'pid' is 0, set the weight for the calling process.
  * System call number 376.
@@ -627,6 +682,7 @@ static const struct sched_class wrr_sched_class = {
 
 	.set_curr_task          = set_curr_task_wrr,
 	.task_tick		= task_tick_wrr,
+	.task_fork		= task_fork_wrr,
 
 	.get_rr_interval	= get_rr_interval_wrr,
 
