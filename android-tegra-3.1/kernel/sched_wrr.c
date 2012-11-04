@@ -50,6 +50,20 @@ select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 }
 #endif /* CONFIG_SMP */
 
+/* Returns the size of the list, assuming that it has
+ * an explicit head element. */
+static int list_size(struct list_head *head)
+{
+	int count = 0;
+	struct list_head *curr;
+	for (curr = head; curr != head; curr = curr->next) {
+		++count;
+	}
+	/* We don't account the head element */
+	count = count - 1;
+	return count;
+}
+
 /* Initializes the given task which is meant to be handled/processed
  * by this scheduler */
 static void init_task_wrr(struct task_struct *p)
@@ -400,14 +414,16 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 		struct sched_wrr_entity *wrr_entity =
 				sched_wrr_entity_of_task(p);
 		printk("switch to wrr: Case 2 Happened\n");
-		printk("Before enqueue:");
+		printk("Before enqueue:\n");
+		printk("Queue Size: %d",
+				list_size(&rq->wrr.run_queue.run_list));
 		if(on_wrr_rq(wrr_entity)) {
 			printk("ERROR : Entity found in  before Addition\n" );
 		} else {
 			printk("Everything OK");
 		}
 		enqueue_task_wrr(rq, p, 0);
-		printk("After enqueue");
+		printk("After enqueue\n");
 		if(on_wrr_rq(wrr_entity)) {
 			printk("Everything OK");
 		} else {
