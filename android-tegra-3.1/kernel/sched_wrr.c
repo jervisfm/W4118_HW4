@@ -62,6 +62,7 @@ static int list_size(struct list_head *head)
 	return count;
 }
 
+
 /* Initializes the given task which is meant to be handled/processed
  * by this scheduler */
 static void init_task_wrr(struct task_struct *p)
@@ -109,6 +110,7 @@ static struct wrr_rq *wrr_rq_of_wrr_entity(struct sched_wrr_entity *wrr_entity)
 
 	return &rq->wrr;
 }
+
 /* Helper method that determines if the given entity is already
  * in the run queue. Return 1 if true and 0 if false */
 static inline int on_wrr_rq(struct sched_wrr_entity *wrr_entity)
@@ -121,6 +123,47 @@ static inline int on_wrr_rq(struct sched_wrr_entity *wrr_entity)
 		return 1;
 }
 
+static void print_queue(struct sched_wrr_entity *head_entity)
+{
+	struct list_head *curr;
+	struct sched_wrr_entity *curr_entity;
+	struct task_struct *p;
+	int counter = 1;
+	struct list_head *head = &head_entity->run_list;
+	for (curr = head->next; curr != head; curr = curr->next) {
+		curr_entity = list_entry(curr, struct sched_wrr_entity,
+					 run_list);
+
+		p  = container_of(curr_entity, struct task_struct, wrr);
+
+
+		printk("Queue Item %d\n", counter);
+		printk("--------------------\n");
+		printk("WRR Weight: %d\n", curr_entity->weight);
+		printk("Process PID:%d\n", p->pid);
+		printk("Process Name: %s\n", p->comm);
+		printk("Process TGID:%d\n", p->tgid);
+		printk("--------------------\n");
+		++counter;
+	}
+}
+
+static void print_front_item(struct sched_wrr_entity *head)
+{
+	struct task_struct *p;
+	struct list_head *first_item = head->run_list.next;
+	struct sched_wrr_entity *first =
+		list_entry(first_item, struct sched_wrr_entity, run_list);
+	p  = container_of(first, struct task_struct, wrr);
+	if (first == head) {
+		printk("LIST IS EMPTY\n");
+	}
+
+	printk("WRR Weight: %d", first->weight);
+	printk("Process PID:%d\n", p->pid);
+	printk("Process Name: %s", p->comm);
+	printk("Process TGID:%d\n", p->tgid);
+}
 
 /* Helper method that requeues a task */
 static void requeue_task_wrr(struct rq *rq, struct task_struct *p)
@@ -413,14 +456,17 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 				sched_wrr_entity_of_task(p);
 		printk("switch to wrr: Case 2 Happened\n");
 		printk("Before enqueue:\n");
-		printk("Queue Size: %d\n",
+		printk("Queue Size: %ld\n",
+				rq->wrr.size);
+		printk("Queue Size (LM): %d\n",
 				list_size(&rq->wrr.run_queue.run_list));
 		if(on_wrr_rq(wrr_entity)) {
 			printk("ERROR : Entity found in  before Addition\n" );
 		} else {
 			printk("Everything OK");
 		}
-		enqueue_task_wrr(rq, p, 0);
+		print_queue(&rq->wrr.run_queue);
+		/* enqueue_task_wrr(rq, p, 0); */
 		printk("After enqueue\n");
 		printk("Queue Size: %d\n",
 				list_size(&rq->wrr.run_queue.run_list));
