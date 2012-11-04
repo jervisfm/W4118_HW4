@@ -69,6 +69,21 @@ static int list_size(struct list_head *head)
 	return count;
 }
 
+/* Debugging helper method */
+static void print_wrr_task(struct task_struct *p)
+{
+	struct sched_wrr_entity *wrr_entity;
+	if (p == NULL)
+		return;
+
+	wrr_entity = &p->wrr;
+	printf("Task Pid: %d\n", p->pid);
+	printf("Task Name: %s\n", p->comm);
+	printf("WRR Weight: %d\n", wrr_entity->weight);
+	printf("WRR Time_Left: %ld\n", wrr_entity->time_left);
+	printf("WRR Time Slice:%ld\n", wrr_entity->time_slice);
+
+}
 
 /* Initializes the given task which is meant to be handled/processed
  * by this scheduler */
@@ -540,14 +555,24 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
  * System call number 377.*/
 SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 {
-	/* Note that on ARM systems pid_t is just an int */
+	/* TODO: Question:  Do we need to hold a lock of
+	 * some kind here ? It's possible, though unlikely
+	 * that a task dies completely during our call.
+	 * Investigate locks for the PID_HASH table structures*/
 
-	/* TODO:
-	 * Add Access user access controls ?
-	 * I think user can only see their own weight.
-	 * Only root can see everything.
-	 * */
+	/* Note, there is no Need to for user access controls.
+	 * All Users all allows to see anyone's weight.
+	 */
 
+	/*
+	 * Further on ARM systems, pid_t is just an int
+	 * so, we can access it directly.
+	 */
+	if (pid < 0)
+		return -EINVAL;
+
+	int result = 0;
+	struct task_struct* task = NULL;
 	struct pid *pid_struct = NULL;
 	pid_struct = find_get_pid(pid);
 
@@ -558,12 +583,13 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 	/* TODO: Question: Should we only return PID weights
 	 * for process only ? */
 
+	task = get_pid_task(pid_struct, PIDTYPE_PID);
 
+	print_wrr_task(task);
 
+	result = task->wrr.weight;
 
-
-	/*To be implemented */
-	return -1;
+	return result;
 }
 
 
