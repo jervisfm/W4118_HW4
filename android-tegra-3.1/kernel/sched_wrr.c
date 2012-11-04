@@ -413,7 +413,7 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 				sched_wrr_entity_of_task(p);
 		printk("switch to wrr: Case 2 Happened\n");
 		printk("Before enqueue:\n");
-		printk("Queue Size: %d",
+		printk("Queue Size: %d\n",
 				list_size(&rq->wrr.run_queue.run_list));
 		if(on_wrr_rq(wrr_entity)) {
 			printk("ERROR : Entity found in  before Addition\n" );
@@ -422,6 +422,8 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 		}
 		enqueue_task_wrr(rq, p, 0);
 		printk("After enqueue\n");
+		printk("Queue Size: %d\n",
+				list_size(&rq->wrr.run_queue.run_list));
 		if(on_wrr_rq(wrr_entity)) {
 			printk("Everything OK");
 		} else {
