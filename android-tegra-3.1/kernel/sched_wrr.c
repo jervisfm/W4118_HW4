@@ -56,11 +56,9 @@ static int list_size(struct list_head *head)
 {
 	int count = 0;
 	struct list_head *curr;
-	for (curr = head; curr != head; curr = curr->next) {
+	for (curr = head->next; curr != head; curr = curr->next) {
 		++count;
 	}
-	/* We don't account the head element */
-	count = count - 1;
 	return count;
 }
 
