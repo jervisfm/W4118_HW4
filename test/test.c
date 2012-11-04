@@ -200,7 +200,7 @@ static void print_weight(pid_t pid)
 		return;
 	ret = syscall(__NR_sched_getweight, pid);
 	if (ret < 0)
-		return perror("set_weight call failed");
+		return perror("get_weight call failed");
 	printf("Weight of Process %d is %d\n", pid, ret);
 }
 /* Test function : Print weight of current process */
@@ -229,6 +229,7 @@ static void test_change()
 static void do_nothing()
 {
 	return;
+	print_current_weight();
 	is_wrr_policy(0);
 	print_scheduler();
 	change_scheduler();

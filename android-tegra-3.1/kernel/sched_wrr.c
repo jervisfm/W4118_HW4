@@ -82,6 +82,7 @@ static void print_wrr_task(struct task_struct *p)
 	printk("WRR Weight: %d\n", wrr_entity->weight);
 	printk("WRR Time_Left: %ld\n", wrr_entity->time_left);
 	printk("WRR Time Slice:%ld\n", wrr_entity->time_slice);
+	printk("-------\n");
 
 }
 
@@ -567,7 +568,7 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 	 * so, we can access it directly.
 	 */
 
-	int result = 0;
+	int result;
 	struct task_struct* task = NULL;
 	struct pid *pid_struct = NULL;
 
