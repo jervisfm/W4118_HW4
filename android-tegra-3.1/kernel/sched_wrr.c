@@ -301,6 +301,11 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 	update_curr_wrr(rq);
 	prev->se.exec_start = 0;
 
+	if (printk_ratelimit(  )) {
+		printk("ARGGGG, Someone called me !!!\n");
+		dump_stack();
+	}
+
 	/*
 	 * TODO:
 	 * Complete this following sched_rt.c #1187
@@ -392,8 +397,23 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 	 */
 
 	if (rq->curr == p) { /* Case 2  */
+		struct sched_wrr_entity *wrr_entity =
+				sched_wrr_entity_of_task(p);
 		printk("switch to wrr: Case 2 Happened\n");
+		printk("Before enqueue:");
+		if(on_wrr_rq(wrr_entity)) {
+			printk("ERROR : Entity found in  before Addition\n" );
+		} else {
+			printk("Everything OK");
+		}
 		enqueue_task_wrr(rq, p, 0);
+		printk("After enqueue");
+		if(on_wrr_rq(wrr_entity)) {
+			printk("Everything OK");
+		} else {
+			printk("ERROR : Entity found in  before Addition\n" );
+		}
+
 	} else /* Assume case 1 */
 		printk("switch to wrr: Assuming Case 1\n");
 }
