@@ -375,10 +375,12 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 {
 	/* Still to be tested  */
 	struct sched_wrr_entity *wrr_entity = &curr->wrr;
-	struct timeval now;
+	struct timespec now;
+	getnstimeofday(&now);
+
 	/* Update the current run time statistics. */
 	update_curr_wrr(rq);
-	gettimeofday(&now, NULL);
+
 	/*
 	 * each tick is worth 10 milliseconds.
 	 * this is based on way that sched_rt is implemented.
@@ -388,7 +390,9 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 	if (--wrr_entity->time_left) /* there is still time left */
 		return;
 	else
-		printk("Time: %f\n", now.tv_sec + now.tv_usec / pow(10,6));
+		printk("Time: second=%ld\nnano_second=%ld\n",
+			now.tv_sec, now.tv_nsec);
+
 	/* the time_slice is in milliseconds and we need to
 	 * convert it to ticks units */
 	wrr_entity->time_left = wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
