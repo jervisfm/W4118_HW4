@@ -195,7 +195,6 @@ static void change_scheduler()
 
 static void test_change()
 {
-	return;
 	printf("Before Change:\n");
 	print_scheduler();
 	printf("Changing Scheduler...\n");
@@ -222,7 +221,7 @@ static void test(mpz_t number, const char* weight_string)
 
 	test_change();
 
-	printf("Finding Factors2...\n");
+	printf("Finding Factors...\n");
 	start_timer();
 	find_factors(number);
 	run_time = stop_timer();
