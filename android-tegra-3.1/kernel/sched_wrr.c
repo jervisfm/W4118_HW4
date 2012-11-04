@@ -512,7 +512,7 @@ static unsigned int get_rr_interval_wrr(struct rq *rq, struct task_struct *task)
 {
 	/* To be implemented */
 	if (task == NULL)
-		return -EINTVAL;
+		return -1;
 	return task->wrr.weight * SCHED_WRR_TIME_QUANTUM /
 			SCHED_WRR_TICK_FACTOR ;
 }
