@@ -10,6 +10,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/time.h> /* high-res timers */
 #include <sched.h> /* for std. scheduling system calls */
 /* For the custom System calls  */
 #include "../android-tegra-3.1/arch/arm/include/asm/unistd.h"
@@ -28,6 +29,7 @@
 #define SCHED_IDLE		5
 #define SCHED_WRR		6
 
+static struct timeval start_time;
 static void find_factors(mpz_t base);
 
 static int is_number(const char *string)
@@ -119,6 +121,33 @@ static char *get_policy_name(int policy)
 	return result;
 }
 
+static void start_timer()
+{
+	int ret;
+	ret = gettimeofday(&start_time, NULL);
+	if (ret != 0 )
+		return perror("Warning: GetTime in start_time() failed!");
+}
+/* Returns the number of seconds that have elapsed
+ * since start_timer was called */
+static double stop_timer()
+{
+	int ret;
+	struct timeval now, diff;
+
+	ret = gettimeofday(&now, NULL);
+	if (ret != 0) {
+		perror("Warning: GetTime in stop_timer() failed!");
+		return -1;
+	}
+
+	/* find the difference */
+	diff.tv_sec = now.tv_sec - start_time.tv_sec;
+	diff.tv_usec = now.tv_usec - start_time.tv_usec;
+
+	return diff.tv_sec + (diff.tv_usec / pow(10, 6));
+}
+
 /* Prints the currently assigned scheduler of this process */
 static void print_scheduler()
 {
@@ -166,6 +195,7 @@ static void change_scheduler()
 
 static void test_change()
 {
+	return;
 	printf("Before Change:\n");
 	print_scheduler();
 	printf("Changing Scheduler...\n");
@@ -185,15 +215,18 @@ static void do_nothing()
 
 static void test(mpz_t number, const char* weight_string)
 {
+	double run_time;
 	int wt = atoi(weight_string);
 	do_nothing(); /* make the compiler shut up */
 	printf("Weight = %d\n", wt);
 
 	test_change();
 
-	printf("Finding Factors...\n");
+	printf("Finding Factors2...\n");
+	start_timer();
 	find_factors(number);
-	printf("Factorization complete.\n");
+	run_time = stop_timer();
+	printf("Factorization completed in %f seconds.\n", run_time);
 
 
 
