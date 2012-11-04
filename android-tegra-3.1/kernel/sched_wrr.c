@@ -39,8 +39,9 @@
  *
  *  Other Useful files
  *  ====================
- *  -> init/main.c : Bootup process code
+ *  -> init/main.c : Bootup process code. #358
  *  -> include/linux/init_task.h :  Defines the INIT "swapper" task
+ *  -> arch/arm/kernel/process.c : contains the kernel_thread() function
  *
  */
 
