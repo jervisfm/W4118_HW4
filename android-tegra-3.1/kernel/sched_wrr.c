@@ -346,10 +346,7 @@ static void yield_task_wrr (struct rq *rq)
 	/* To be implemented */
 }
 
-/* This method is really just a notification to us before
- * potentially *another* task that we don't manage/schedule
- * runs. As such, we don't need to do anything special.
- * */
+
 static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 {
 
@@ -359,6 +356,14 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 	 * and in the main schedule function.
 	 * -> function schedule()  sched.c # 4335
 	 */
+
+	/* This method is really just a notification to us before
+	 * potentially *another* task that we don't manage/schedule
+	 * runs and before a task fully exits.
+	 *
+	 * As such, we don't need to do anything special.
+	 * (in the exiting case, dequeue_task will be called)
+	 * */
 	update_curr_wrr(rq);
 	prev->se.exec_start = 0;
 }
@@ -457,7 +462,7 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 	 * have been called.
 	 */
 
-	/*
+	/* TO DELETE THIS
 	if (rq->curr == p) { // Case 2
 		struct sched_wrr_entity *wrr_entity =
 				sched_wrr_entity_of_task(p);
