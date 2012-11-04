@@ -192,9 +192,31 @@ static void change_scheduler()
 		exit(-1);
 	}
 }
+/* Test function : print weight of given pid */
+static void print_weight(pid_t pid)
+{
+	int ret;
+	if (pid < 0)
+		return;
+	ret = syscall(__NR_sched_setweight, pid);
+	if (ret < 0)
+		return perror("set_weight call failed");
+	printf("Weight of Process %d is %d\n", pid, ret);
+}
+/* Test function : Print weight of current process */
+static void print_current_weight()
+{
+	pid_t pid = getpid();
+	if (pid < 0) {
+		perror("Get PID Call failed. Aborting ...");
+		exit(-1);
+	}
+	print_weight(pid);
+}
 
 static void test_change()
 {
+	return;
 	printf("Before Change:\n");
 	print_scheduler();
 	printf("Changing Scheduler...\n");
@@ -217,10 +239,10 @@ static void test(mpz_t number, const char* weight_string)
 	double run_time;
 	int wt = atoi(weight_string);
 	do_nothing(); /* make the compiler shut up */
-	printf("Weight = %d\n", wt);
+	printf("Input Weight = %d\n", wt);
 
 	test_change();
-	/* fork(); */
+	print_current_weight();
 	printf("Finding Factors...\n");
 	start_timer();
 	find_factors(number);
