@@ -36,6 +36,11 @@
  *    inherited by the child of any forking task.
  * 8) If a process' scheduler is set to SCHED_WRR after previously being set to
  *    another scheduler, its weight should be the default weight.
+ *
+ *  Other Useful files
+ *  -> init/main.c : Bootup process code
+ *  -> include/linux/init_task.h :  Defines the INIT "swapper" task
+ *
  */
 
 

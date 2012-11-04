@@ -2850,6 +2850,8 @@ static void __sched_fork(struct task_struct *p)
 #endif
 
 	INIT_LIST_HEAD(&p->rt.run_list);
+	/* Initalize the WRR run list for a new process */
+	INIT_LIST_HEAD(&p->wrr.run_list);
 
 #ifdef CONFIG_PREEMPT_NOTIFIERS
 	INIT_HLIST_HEAD(&p->preempt_notifiers);
@@ -8235,6 +8237,7 @@ void __init sched_init(void)
 	 * -> Change this class to WRR ???
 	 */
 	current->sched_class = &fair_sched_class;
+
 
 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
 	zalloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);

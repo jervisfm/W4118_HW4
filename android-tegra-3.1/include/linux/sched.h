@@ -1341,8 +1341,8 @@ struct task_struct {
 	unsigned in_iowait:1;
 
 
-	/* Revert to default priority/policy when forking */
-	unsigned sched_reset_on_fork:1;
+	/* DO NOT Revert to default priority/policy when forking */
+	unsigned sched_reset_on_fork:0;
 	unsigned sched_contributes_to_load:1;
 
 	pid_t pid;
