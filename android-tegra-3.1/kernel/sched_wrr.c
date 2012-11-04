@@ -217,19 +217,14 @@ static void update_curr_wrr(struct rq *rq)
  */
 static void check_preempt_curr_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
-	/* TO be Implemented. */
-
-	/* Idle task impl:
-	 * Idle tasks are unconditionally rescheduled:
-	 * resched_task(rq->wrr);
-	 */
-
+	/* We never do any preemption since we follow a FIFO Round-Robin
+	 * policy that has no notion of priorities. */
 }
 
 /* This function chooses the most appropriate task eligible to run next.*/
 static struct task_struct *pick_next_task_wrr(struct rq *rq)
 {
-	/* TO be Implemented. */
+	/* TO be throughly tested. */
 	/*
 	if (printk_ratelimit(  ))
 		printk("We were called to schedule a task but we have not"
@@ -339,11 +334,11 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	/* spin_unlock(wrr_rq->wrr_rq_lock); */
 }
 
-/* This function is basically just a dequeue followed by an enqueue, unless the
-   compat_yield sysctl is turned on */
+/* This function is called when a task voluntarily gives up running */
 static void yield_task_wrr (struct rq *rq)
 {
-	/* To be implemented */
+	/* So we just requeue the task */
+	requeue_task_wrr(rq, rq->curr);
 }
 
 
@@ -511,10 +506,15 @@ prio_changed_wrr(struct rq *rq, struct task_struct *p, int oldprio)
 	 * notion of priority.*/
 }
 
+/* Would be called by the get_interval system call
+ * sched_rr_ get_interval */
 static unsigned int get_rr_interval_wrr(struct rq *rq, struct task_struct *task)
 {
 	/* To be implemented */
-	return 0;
+	if (task == NULL)
+		return -EINTVAL;
+	return task->wrr.weight * SCHED_WRR_TIME_QUANTUM /
+			SCHED_WRR_TICK_FACTOR ;
 }
 
 /* Set the SCHED_WRR weight of process, as identified by 'pid'.
