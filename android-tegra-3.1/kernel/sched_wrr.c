@@ -530,7 +530,7 @@ static unsigned int get_rr_interval_wrr(struct rq *rq, struct task_struct *task)
  */
 SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 {
-	/* To be implemneted */
+	/* TODO: To be implemneted */
 	return -1;
 }
 
@@ -540,6 +540,28 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
  * System call number 377.*/
 SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 {
+	/* Note that on ARM systems pid_t is just an int */
+
+	/* TODO:
+	 * Add Access user access controls ?
+	 * I think user can only see their own weight.
+	 * Only root can see everything.
+	 * */
+
+	struct pid *pid_struct = NULL;
+	pid_struct = find_get_pid(pid);
+
+	if (pid_struct == NULL) { /* Invalid PID */
+		return -EINVAL;
+	}
+
+	/* TODO: Question: Should we only return PID weights
+	 * for process only ? */
+
+
+
+
+
 	/*To be implemented */
 	return -1;
 }
