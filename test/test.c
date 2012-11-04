@@ -155,7 +155,7 @@ static void change_scheduler()
 		exit(-1);
 	}
 
-	printf("Changing Scheduler for PID %d", pid);
+	printf("Changing Scheduler for PID %d\n", pid);
 
 	ret = sched_setscheduler(pid, policy, &param);
 	if (ret < 0) {
@@ -190,7 +190,6 @@ static void test(mpz_t number, const char* weight_string)
 	printf("Weight = %d\n", wt);
 
 	test_change();
-	return;
 
 	printf("Finding Factors...\n");
 	find_factors(number);
