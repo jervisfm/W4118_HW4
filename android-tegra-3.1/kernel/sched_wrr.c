@@ -385,13 +385,19 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 	 * each tick is worth 10 milliseconds.
 	 * this is based on way that sched_rt is implemented.
 	 * (Not exactly sure if this is a hard 10 milliseconds...)
-	 * TODO: confirm the actual exact tick rate.
+
+	 * TODO: confirm exact tick rate
+	 * My testing on the emulator has revealed that
+	 * task_tick_wrr is indeed called every ~10ms. Don't know about the
+	 * actual device though.
 	 */
 	if (--wrr_entity->time_left) /* there is still time left */
 		return;
-	else
-		printk("Time: second=%ld\nnano_second=%ld\n",
-			now.tv_sec, now.tv_nsec);
+
+	/* Code Snippet below Measures how often ticks occur */
+	/* printk("Time: second=%ld\nnano_second=%ld\n",
+			now.tv_sec, now.tv_nsec); */
+
 
 	/* the time_slice is in milliseconds and we need to
 	 * convert it to ticks units */
