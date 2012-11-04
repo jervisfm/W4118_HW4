@@ -440,7 +440,16 @@ static void set_curr_task_wrr(struct rq *rq)
  * */
 static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 {
+
 	/* Still to be tested */
+
+	/* From testing, I have found that this method
+	 * should not need to do anything.
+	 *
+	 * This is because enqueue will already have been called
+	 * by the time we get called.
+	 * */
+
 
 	/* There are two cases here:
 	 * 1) switched_to called when current process changed the
@@ -451,10 +460,12 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 	 *
 	 * 2) The current running process has decided to change its
 	 * scheduler to SCHED_WRR from something else, so enqueue it.
-	 * set_curr_task will have been called. But enqueue will not have been.
+	 * set_curr_task will have been called. Enqueue WILL also
+	 * have been called.
 	 */
 
-	if (rq->curr == p) { /* Case 2  */
+	/*
+	if (rq->curr == p) { // Case 2
 		struct sched_wrr_entity *wrr_entity =
 				sched_wrr_entity_of_task(p);
 		printk("switch to wrr: Case 2 Happened\n");
@@ -469,7 +480,7 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 			printk("Everything OK");
 		}
 		print_queue(&rq->wrr.run_queue);
-		/* enqueue_task_wrr(rq, p, 0); */
+		enqueue_task_wrr(rq, p, 0);
 		printk("After enqueue\n");
 		printk("Queue Size: %d\n",
 				list_size(&rq->wrr.run_queue.run_list));
@@ -479,8 +490,9 @@ static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 			printk("ERROR : Entity found in  before Addition\n" );
 		}
 
-	} else /* Assume case 1 */
+	} else // Assume case 1
 		printk("switch to wrr: Assuming Case 1\n");
+	*/
 }
 
 static void
