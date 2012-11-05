@@ -611,8 +611,47 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	 *    does not have the WRR_POLICY
 	 */
 
+	struct task_struct* task = NULL;
+	struct pid *pid_struct = NULL;
 
+	if (pid < 0)
+		return -EINVAL;
+	if (weight < 0 || !valid_weight(weight))
+		return -EINVAL;
 
+	pid_struct = find_get_pid(pid);
+	if (pid_struct == NULL) /* Invalid / Non-existent PID  */
+		return -EINVAL;
+
+	task = get_pid_task(pid_struct, PIDTYPE_PID);
+
+	if (task->policy != SCHED_WRR)
+		return -EINVAL;
+
+	/*
+	 * Check if user is root.
+	 * Approach borrowed from HW3 solution.
+	 * TODO: Compare to this using capable(CAP_SYS_NICE)
+	 * like in sched.c # 5166.
+	 */
+	if (current_uid() != 0 && current_euid() != 0){ /* user is root */
+		/* anything goes ... */
+		task->wrr.weight = (unsigned int) weight;
+
+	} else { /* User is not root / admin */
+
+		/* normal user can't change other's weights */
+		if(!check_same_owner(task))
+			return -EPERM;
+
+		/* Normal user can only reduce weight */
+		if (weight > task->wrr.weight)
+			return -EPERM;
+
+		task->wrr.weight = (unsigned int) weight;
+	}
+
+	return 0;
 }
 
 
@@ -646,9 +685,9 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 
 	pid_struct = find_get_pid(pid);
 
-	if (pid_struct == NULL) { /* Invalid / Non-existent PID  */
+	if (pid_struct == NULL)/* Invalid / Non-existent PID  */
 		return -EINVAL;
-	}
+
 
 	task = get_pid_task(pid_struct, PIDTYPE_PID);
 
