@@ -25,7 +25,7 @@
  * 3) If the weight of a task currently on a CPU is changed, it should finish
  *    its time quantum as it was before the weight change. i.e. increasing
  *    the weight of a task currently on a CPU does not extend its current time
- *    quantum.
+ *    quantum. [DONE]
  * 4) When deciding which CPU a job should be assigned to, it should be
  *    assigned to the CPU with the smallest total weight (i.e. sum of the
  *    weights of the jobs on the CPU's run queue).
@@ -106,6 +106,29 @@ static int valid_weight(unsigned int weight)
 		return 1;
 	else
 		return 0;
+}
+
+/* Update the time slice and time left parameters which are dervied
+ * from the weight */
+static void update_timings(struct task_struct *p)
+{
+	if (p == NULL)
+		return;
+	p->wrr.time_slice = p->wrr.weight * SCHED_WRR_TIME_QUANTUM;
+	p->wrr.time_left = p->wrr.time_slice / SCHED_WRR_TICK_FACTOR;
+}
+
+static void update_timings_after_wt_change(struct task_struct *p)
+{
+	if (p == NULL)
+		return;
+
+	if(current == p) { /* Let Task Finish current time slice */
+		p->wrr.time_slice = p->wrr.weight * SCHED_WRR_TIME_QUANTUM;
+	} else {
+		p->wrr.time_slice = p->wrr.weight * SCHED_WRR_TIME_QUANTUM;
+		p->wrr.time_left = p->wrr.time_slice / SCHED_WRR_TICK_FACTOR;
+	}
 }
 
 /* Initializes the given task which is meant to be handled/processed
@@ -306,6 +329,10 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 
 	p = wrr_task_of(next_entity);
 	p->se.exec_start = rq->clock_task;
+
+	/* Recompute the time left + time slice value incase weight
+	 * of task has been changed */
+	update_timings(p);
 
 	return p;
 
@@ -667,6 +694,9 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 
 		task->wrr.weight =  weight;
 	}
+
+	/* Update the time slice computation */
+	update_timings_after_wt_change(task);
 
 	return 0;
 }
