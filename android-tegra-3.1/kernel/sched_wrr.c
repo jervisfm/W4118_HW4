@@ -20,7 +20,7 @@
  * Main TODO:
  * 1) Make this the default scheduling policy for init and all of its descendants.
  *    Note, May be easiest to have swapper policy be changed, so that kthread
- *    uses WRR as well. This will help ensure system responsiveness.
+ *    uses WRR as well. This will help ensure system responsiveness. [DONE]
  * 2) Support Multiprocessor systems, like the Nexus 7.
  * 3) If the weight of a task currently on a CPU is changed, it should finish
  *    its time quantum as it was before the weight change. i.e. increasing
@@ -33,9 +33,9 @@
  * 6) Only tasks whose policy is set to SCHED_WRR should be considered for
  *    selection by your this scheduler
  * 7) The weight of a task and the SCHED_WRR scheduling flag should be
- *    inherited by the child of any forking task.
+ *    inherited by the child of any forking task. [DONE]
  * 8) If a process' scheduler is set to SCHED_WRR after previously being set to
- *    another scheduler, its weight should be the default weight.
+ *    another scheduler, its weight should be the default weight. [DONE]
  *
  *  Other Useful files
  *  ====================
@@ -500,18 +500,26 @@ static void set_curr_task_wrr(struct rq *rq)
  * */
 static void switched_to_wrr(struct rq *rq, struct task_struct *p)
 {
-
-	/* Still to be tested */
-
 	/* From testing, I have found that this method
-	 * should not need to do anything.
+	 * should not need to do much. We only need to
+	 * reset weight to default.
 	 *
-	 * This is because enqueue will already have been called
+	 * Note that enqueue will already have been called
 	 * by the time we get called.
 	 * */
+	struct sched_wrr_entity *wrr_entity = &p->wrr;
+	wrr_entity->task = p;
+
+	/* Use Default Parameters */
+	wrr_entity->weight = SCHED_WRR_DEFAULT_WEIGHT;
+	wrr_entity->time_slice =
+		SCHED_WRR_DEFAULT_WEIGHT * SCHED_WRR_TIME_QUANTUM;
+	wrr_entity->time_left =
+		wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
 
 
-	/* There are two cases here:
+	/* TO DELETE THIS
+	 * There are two cases here:
 	 * 1) switched_to called when current process changed the
 	 * policy of *another* non-running process to be SCHED_WRR.
 	 * enqueue WILL ALREADY have been called (sched.c #5259)
@@ -653,7 +661,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 
 		/* Normal user can only reduce weight */
 		if (weight > task->wrr.weight)
-			return -EPERM;
+			//return -EPERM;
 
 		task->wrr.weight = (unsigned int) weight;
 	}
