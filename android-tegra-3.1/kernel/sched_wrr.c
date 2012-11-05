@@ -621,11 +621,15 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	if (weight < 0 || !valid_weight(weight))
 		return -EINVAL;
 
-	pid_struct = find_get_pid(pid);
-	if (pid_struct == NULL) /* Invalid / Non-existent PID  */
-		return -EINVAL;
-
-	task = get_pid_task(pid_struct, PIDTYPE_PID);
+	/* If pid is zero, use the current running task */
+	if (pid == 0)
+		task = current;
+	else {
+		pid_struct = find_get_pid(pid);
+		if (pid_struct == NULL) /* Invalid / Non-existent PID  */
+			return -EINVAL;
+		task = get_pid_task(pid_struct, PIDTYPE_PID);
+	}
 
 	if (task->policy != SCHED_WRR)
 		return -EINVAL;

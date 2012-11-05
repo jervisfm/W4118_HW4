@@ -214,6 +214,17 @@ static void print_current_weight()
 	print_weight(pid);
 }
 
+static void set_weight(pid_t pid, int weight)
+{
+	int ret;
+	if (pid < 0)
+		return;
+	ret = syscall(__NR_sched_getweight, pid, weight);
+	if (ret < 0)
+		return perror("set_weight call failed");
+	printf("Weight of Process %d updated to %d", pid, weight);
+}
+
 static void test_change()
 {
 	printf("Before Change:\n");
@@ -241,9 +252,12 @@ static void test(mpz_t number, const char* weight_string)
 	do_nothing(); /* make the compiler shut up */
 	printf("Input Weight = %d\n", wt);
 
-	fork();
-	test_change();
+	/*test_change();*/
 	print_current_weight();
+
+	set_weight(123, 15);
+	print_current_weight();
+
 	printf("Finding Factors...\n");
 	start_timer();
 	find_factors(number);
