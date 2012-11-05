@@ -139,7 +139,7 @@ extern struct cred init_cred;
 	.prio		= MAX_PRIO-20,					\
 	.static_prio	= MAX_PRIO-20,					\
 	.normal_prio	= MAX_PRIO-20,					\
-	.policy		= SCHED_WRR,	/*Used to be SCHED_NORMAL */	\
+	.policy		= SCHED_NORMAL,	/*Used to be SCHED_NORMAL */	\
 	/*Set up the default values of a WRR Entity 100ms time slices*/	\
 	.wrr 		= {.run_list = LIST_HEAD_INIT(tsk.wrr.run_list),\
 			   .task = &tsk, 				\
