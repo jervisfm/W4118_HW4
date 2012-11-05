@@ -21,17 +21,17 @@
  * 1) Make this the default scheduling policy for init and all of its descendants.
  *    Note, May be easiest to have swapper policy be changed, so that kthread
  *    uses WRR as well. This will help ensure system responsiveness. [DONE]
- * 2) Support Multiprocessor systems, like the Nexus 7.
+ **2) Support Multiprocessor systems, like the Nexus 7.
  * 3) If the weight of a task currently on a CPU is changed, it should finish
  *    its time quantum as it was before the weight change. i.e. increasing
  *    the weight of a task currently on a CPU does not extend its current time
  *    quantum. [DONE]
- * 4) When deciding which CPU a job should be assigned to, it should be
+ **4) When deciding which CPU a job should be assigned to, it should be
  *    assigned to the CPU with the smallest total weight (i.e. sum of the
  *    weights of the jobs on the CPU's run queue).
  * 5) Add periodic load balancing every 500ms
  * 6) Only tasks whose policy is set to SCHED_WRR should be considered for
- *    selection by your this scheduler
+ *    selection by your this scheduler [DONE]
  * 7) The weight of a task and the SCHED_WRR scheduling flag should be
  *    inherited by the child of any forking task. [DONE]
  * 8) If a process' scheduler is set to SCHED_WRR after previously being set to
@@ -336,6 +336,11 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	/* Recompute the time left + time slice value incase weight
 	 * of task has been changed */
 	update_timings(p);
+
+	/* Sanity check */
+	if (p->policy != SCHED_WRR)
+		printk("Warning : Scheduler WRONLY picked non-WRR task\n");
+
 
 	return p;
 
