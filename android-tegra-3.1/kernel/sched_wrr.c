@@ -55,6 +55,8 @@
 
 /* Forward declaration. Definition found at bottom of this file */
 static const struct sched_class wrr_sched_class;
+/* We use this function here. It's defined in sched.c #5109 */
+static bool check_same_owner(struct task_struct *p);
 
 #ifdef CONFIG_SMP
 static int
