@@ -255,14 +255,10 @@ static void test(mpz_t number, const char* weight_string)
 	printf("PID of this Process: %d", getpid());
 	/*test_change();*/
 
-	//print_current_weight();
-	print_weight(0);
+	print_current_weight();
 
 	set_weight(0, wt);
-	//set_weight(0, wt+1);
-
-	// print_current_weight();
-	print_weight(0);
+	print_current_weight();
 
 	printf("Finding Factors...\n");
 	start_timer();

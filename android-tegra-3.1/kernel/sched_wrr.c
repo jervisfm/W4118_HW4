@@ -666,6 +666,10 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 
 	/* If pid is zero, use the current running task */
 	if (pid == 0) {
+		/**
+		 * TODO:
+		 * Verify if this work with SMP
+		 */
 		task = current;
 		printk("Set Wt: Current PID %d\n", current->pid);
 	}
@@ -738,8 +742,6 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 	if (pid == 0) {
 		printk("\nCurrent Process PID %d\n", current->pid);
 		return current->wrr.weight;
-	} else {
-		printk("NOT PID 0000000\n");
 	}
 
 	pid_struct = find_get_pid(pid);
