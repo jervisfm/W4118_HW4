@@ -623,6 +623,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 
 	struct task_struct* task = NULL;
 	struct pid *pid_struct = NULL;
+	int wt;
 
 	if (pid < 0)
 		return -EINVAL;
@@ -630,8 +631,10 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 		return -EINVAL;
 
 	/* If pid is zero, use the current running task */
-	if (pid == 0)
+	if (pid == 0) {
 		task = current;
+		printk("Set Wt: Current PID %d\n", current->pid);
+	}
 	else {
 		pid_struct = find_get_pid(pid);
 		if (pid_struct == NULL) /* Invalid / Non-existent PID  */
@@ -650,7 +653,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	 */
 	if (current_uid() != 0 && current_euid() != 0){ /* user is root */
 		/* anything goes ... */
-		task->wrr.weight = (unsigned int) weight;
+		wt = (unsigned int) weight;
 		printk("ROOT USER\n");
 
 	} else { /* User is not root / admin */
@@ -663,8 +666,15 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 		if (weight > task->wrr.weight)
 			//return -EPERM;
 
-		task->wrr.weight = (unsigned int) weight;
+		// task->wrr.weight =  weight;
+		printk("B4 assign wt = %u\n", wt);
+		printk("B4 assign wt = %u\n", wt);
+		wt =  717;
+		printk("After assign wt = %u\n", wt);
 	}
+
+	task->wrr.weight =  wt;
+	printk("Set Wt B4 Return. Wt= %u | %d\n", task->wrr.weight, wt);
 
 	return 0;
 }
@@ -695,8 +705,12 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 		return -EINVAL;
 
 	/* Return weight of current process if PID is 0 */
-	if (pid == 0)
+	if (pid == 0) {
+		printk("\nCurrent Process PID %d\n", current->pid);
 		return current->wrr.weight;
+	} else {
+		printk("NOT PID 0000000\n");
+	}
 
 	pid_struct = find_get_pid(pid);
 
