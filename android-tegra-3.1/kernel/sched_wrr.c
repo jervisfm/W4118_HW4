@@ -623,7 +623,6 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 
 	struct task_struct* task = NULL;
 	struct pid *pid_struct = NULL;
-	int wt;
 
 	if (pid < 0)
 		return -EINVAL;
@@ -653,7 +652,7 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	 */
 	if (current_uid() != 0 && current_euid() != 0){ /* user is root */
 		/* anything goes ... */
-		wt = (unsigned int) weight;
+		task->wrr.weight = (unsigned int) weight;
 		printk("ROOT USER\n");
 
 	} else { /* User is not root / admin */
@@ -663,19 +662,13 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 			return -EPERM;
 
 		/* Normal user can only reduce weight */
-		if (weight > task->wrr.weight)
-			//return -EPERM;
+		/* if (weight > task->wrr.weight)
+			return -EPERM; */
 
-		// task->wrr.weight =  weight;
-		printk("B4 assign wt = %u\n", wt);
-		printk("B4 assign wt = %u\n", wt);
-		wt =  717;
-		printk("After assign wt = %u\n", wt);
+		task->wrr.weight =  weight;
 	}
 
-	task->wrr.weight =  wt;
-	printk("Set Wt B4 Return. Wt= %u | %d\n", task->wrr.weight, wt);
-
+	printk("Set Wt B4 Return. Wt= %u | %d\n", task->wrr.weight, weight);
 	return 0;
 }
 
