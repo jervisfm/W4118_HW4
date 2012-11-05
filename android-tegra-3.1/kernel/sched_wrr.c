@@ -662,13 +662,12 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 			return -EPERM;
 
 		/* Normal user can only reduce weight */
-		/* if (weight > task->wrr.weight)
-			return -EPERM; */
+		if (weight > task->wrr.weight)
+			return -EPERM;
 
 		task->wrr.weight =  weight;
 	}
 
-	printk("Set Wt B4 Return. Wt= %u | %d\n", task->wrr.weight, weight);
 	return 0;
 }
 
