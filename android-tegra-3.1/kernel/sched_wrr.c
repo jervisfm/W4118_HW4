@@ -643,9 +643,10 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	if (current_uid() != 0 && current_euid() != 0){ /* user is root */
 		/* anything goes ... */
 		task->wrr.weight = (unsigned int) weight;
+		printk("ROOT USER\n");
 
 	} else { /* User is not root / admin */
-
+		printk("NORMAL USER\n");
 		/* normal user can't change other's weights */
 		if(!check_same_owner(task))
 			return -EPERM;

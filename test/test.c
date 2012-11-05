@@ -219,10 +219,10 @@ static void set_weight(pid_t pid, int weight)
 	int ret;
 	if (pid < 0)
 		return;
-	ret = syscall(__NR_sched_getweight, pid, weight);
+	ret = syscall(__NR_sched_setweight, pid, weight);
 	if (ret < 0)
 		return perror("set_weight call failed");
-	printf("Weight of Process %d updated to %d", pid, weight);
+	printf("Weight of Process %d updated to %d\n", pid, weight);
 }
 
 static void test_change()
@@ -239,6 +239,7 @@ static void test_change()
 static void do_nothing()
 {
 	return;
+	test_change();
 	print_current_weight();
 	is_wrr_policy(0);
 	print_scheduler();
@@ -255,7 +256,8 @@ static void test(mpz_t number, const char* weight_string)
 	/*test_change();*/
 	print_current_weight();
 
-	set_weight(123, 15);
+	set_weight(0, wt);
+	set_weight(0, wt+1);
 	print_current_weight();
 
 	printf("Finding Factors...\n");
