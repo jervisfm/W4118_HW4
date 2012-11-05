@@ -689,12 +689,9 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	 * TODO: Compare to this using capable(CAP_SYS_NICE)
 	 * like in sched.c # 5166.
 	 */
-	if (current_uid() != 0 && current_euid() != 0){ /* user is root */
-		/* anything goes ... */
-		task->wrr.weight = (unsigned int) weight;
-		printk("ROOT USER\n");
-
-	} else { /* User is not root / admin */
+	printk("Current UID is %d and EUID = %d\n",
+			current_uid(), current_euid());
+	if (current_uid() != 0 && current_euid() != 0){ /* Normal user */
 		printk("NORMAL USER\n");
 		/* normal user can't change other's weights */
 		if(!check_same_owner(task))
@@ -705,6 +702,10 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 			return -EPERM;
 
 		task->wrr.weight =  weight;
+	} else { /* user is root */
+		/* anything goes ... */
+		task->wrr.weight = (unsigned int) weight;
+		printk("ROOT USER\n");
 	}
 
 	/* Update the time slice computation */
