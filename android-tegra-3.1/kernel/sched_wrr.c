@@ -120,10 +120,13 @@ static void update_timings(struct task_struct *p)
 
 static void update_timings_after_wt_change(struct task_struct *p)
 {
+	struct rq *rq;
 	if (p == NULL)
 		return;
 
-	if(current == p) { /* Let Task Finish current time slice */
+	rq = task_rq(p);
+	if(rq->curr == p || current == p) {
+		/* Let Running Task Finish current time slice */
 		p->wrr.time_slice = p->wrr.weight * SCHED_WRR_TIME_QUANTUM;
 	} else {
 		p->wrr.time_slice = p->wrr.weight * SCHED_WRR_TIME_QUANTUM;
