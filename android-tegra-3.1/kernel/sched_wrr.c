@@ -370,9 +370,9 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	if (rq->nr_running <= 0)
 		return NULL;
 
-
+	/*
 	print_queue(&rq->wrr.run_queue);
-	printk("========\n");
+	printk("========\n"); */
 
 	/* if( wrr_rq->nr_running <= 0) {
 		if (printk_ratelimit())
@@ -406,7 +406,7 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 		printk("Warning : Scheduler WRONLY picked non-WRR task\n");
 
 
-	printk("Scheduling %s (%d)\n", p->comm, p->pid);
+	/* printk("Scheduling %s (%d)\n", p->comm, p->pid); */
 
 	return p;
 
@@ -492,6 +492,9 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	++wrr_rq->nr_running;
 	++wrr_rq->size;
 
+	print_queue(&rq->wrr.run_queue);
+	printk("========\n");
+
 	/*
 	 * TODO: Check and see if we need to use locks here.
 	 */
@@ -557,11 +560,11 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 		return;
 
 	/* Code Snippet below Measures how often ticks occur */
-
-	printk("%s", curr->comm);
+	/*printk("%s", curr->comm);
 	printk("Test Time: second=%ld\nnano_second=%ld\n",
 			now.tv_sec, now.tv_nsec);
 	printk("\n");
+	*/
 
 	/* the time_slice is in milliseconds and we need to
 	 * convert it to ticks units */

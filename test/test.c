@@ -248,6 +248,7 @@ static void do_nothing()
 
 static void test(mpz_t number, const char* weight_string)
 {
+	int ret;
 	double run_time;
 	int wt = atoi(weight_string);
 	do_nothing(); /* make the compiler shut up */
@@ -255,7 +256,15 @@ static void test(mpz_t number, const char* weight_string)
 	printf("PID of this Process: %d", getpid());
 
 	print_scheduler();
-	//fork();
+	ret = fork();
+	if (ret < 0)
+		printf("ERRROR!!!!\n");
+	else {
+		if(ret == 0)
+			printf("CHILD\n");
+		else
+			printf("PARENT\n");
+	}
 	test_change();
 
 	print_current_weight();
