@@ -8252,7 +8252,7 @@ void __init sched_init(void)
 	 * TODO:
 	 * -> Change this class to WRR ???
 	 */
-	current->sched_class = &fair_sched_class;
+	current->sched_class = &wrr_sched_class;
 
 
 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
