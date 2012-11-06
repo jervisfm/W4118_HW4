@@ -327,6 +327,10 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	if (rq->nr_running <= 0)
 		return NULL;
 
+	/*
+	print_queue(&rq->wrr.run_queue);
+	printk("========\n"); */
+
 	/* if( wrr_rq->nr_running <= 0) {
 		if (printk_ratelimit())
 			printk("WRR NULL PICK TASK CALLED\n");
@@ -416,6 +420,7 @@ static void
 enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
 
+	printk(" | WRR Enqeue Called: %s (%d)\n", p->comm, p->pid);
 	struct list_head *head;
 	struct sched_wrr_entity *new_entity;
 	struct sched_wrr_entity *wrr_entity;

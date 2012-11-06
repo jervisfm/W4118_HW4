@@ -1808,6 +1808,12 @@ static void set_load_weight(struct task_struct *p)
 
 static void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
+	/*
+	if (p->sched_class == &sched_wrr_class)
+		printk("WRR Policy == %d\n", p->policy);
+	else
+		printk("Policy = %d\n", p->policy); */
+	printk("Policy = %d ", p->policy);
 	update_rq_clock(rq);
 	sched_info_queued(p);
 	p->sched_class->enqueue_task(rq, p, flags);
