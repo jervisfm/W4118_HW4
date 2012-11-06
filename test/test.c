@@ -265,6 +265,7 @@ static void test(mpz_t number, const char* weight_string)
 		else
 			printf("PARENT\n");
 	}
+
 	test_change();
 
 	print_current_weight();
