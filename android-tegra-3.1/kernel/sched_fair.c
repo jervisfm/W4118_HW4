@@ -1308,9 +1308,15 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
 
+	/*
+	printk(" | Fair enq called | ");
 
-	printk(" | Fair enq called\n");
+	if (p->sched_class == &fair_sched_class)
+		printk("Expected Class found\n");
+	else
+		printk("Some other class SCHED CLASS\n");
 
+	*/
 	for_each_sched_entity(se) {
 		if (se->on_rq)
 			break;
