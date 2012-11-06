@@ -419,8 +419,7 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 static void
 enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
-
-	printk(" | WRR Enqeue Called: %s (%d)\n", p->comm, p->pid);
+	printk("WRR Enqeue Called: %s (%d)\n", p->comm, p->pid);
 	struct list_head *head;
 	struct sched_wrr_entity *new_entity;
 	struct sched_wrr_entity *wrr_entity;
