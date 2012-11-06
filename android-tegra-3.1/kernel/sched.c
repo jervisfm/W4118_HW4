@@ -2914,6 +2914,8 @@ void sched_fork(struct task_struct *p)
 	 */
 	p->prio = current->normal_prio;
 
+	/* We Want ALL - Non realtime Processes to default to using
+	 * WRR class  */
 	if (!rt_prio(p->prio))
 		p->sched_class = &wrr_sched_class;
 
