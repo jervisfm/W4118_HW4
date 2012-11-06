@@ -210,13 +210,56 @@ static inline int on_wrr_rq(struct sched_wrr_entity *wrr_entity)
 		return 1;
 }
 
+/* Returns the queue size given a sched_wrr_entity */
+static int wrr_entity_queue_size(struct sched_wrr_entity *head_entity)
+{
+	struct list_head *curr;
+	int counter = 0;
+	struct list_head *head = &head_entity->run_list;
+
+	if (head_entity == NULL)
+		return 0;
+
+	for (curr = head->next; curr != head; curr = curr->next)
+		++counter;
+	return counter;
+}
+
+/* returns the queue size given a run queue */
+static int wrr_rq_queue_size(struct rq *rq)
+{
+	struct list_head *curr;
+	struct list_head *head;
+	struct sched_wrr_entity *head_entity;
+	int counter = 0;
+	head_entity = &rq->wrr.run_queue;
+	head = &head_entity->run_list;
+
+
+	if (rq == NULL)
+		return 0;
+
+	for (curr = head->next; curr != head; curr = curr->next)
+		++counter;
+
+
+	if (counter != rq->wrr.size) {
+		printk("Warning WRR_RQ.Size differs from actual size");
+		printk("wrr_rq.size = %ld vs actual_size = %d\n",
+				rq->wrr.size, counter);
+	}
+	return counter;
+}
+
 static void print_queue(struct sched_wrr_entity *head_entity)
 {
 	struct list_head *curr;
 	struct sched_wrr_entity *curr_entity;
 	struct task_struct *p;
 	int counter = 1;
+	int queue_size = wrr_entity_queue_size(head_entity);
 	struct list_head *head = &head_entity->run_list;
+
 	for (curr = head->next; curr != head; curr = curr->next) {
 		curr_entity = list_entry(curr, struct sched_wrr_entity,
 					 run_list);
@@ -224,7 +267,7 @@ static void print_queue(struct sched_wrr_entity *head_entity)
 		p  = container_of(curr_entity, struct task_struct, wrr);
 
 
-		printk("Queue Item %d\n", counter);
+		printk("Queue Item %d / %d\n", counter, queue_size);
 		printk("--------------------\n");
 		printk("WRR Weight: %d\n", curr_entity->weight);
 		printk("Process PID:%d\n", p->pid);
@@ -327,9 +370,9 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	if (rq->nr_running <= 0)
 		return NULL;
 
-	/*
+
 	print_queue(&rq->wrr.run_queue);
-	printk("========\n"); */
+	printk("========\n");
 
 	/* if( wrr_rq->nr_running <= 0) {
 		if (printk_ratelimit())
@@ -419,11 +462,12 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 static void
 enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 {
-	printk("WRR Enqeue Called: %s (%d)\n", p->comm, p->pid);
 	struct list_head *head;
 	struct sched_wrr_entity *new_entity;
 	struct sched_wrr_entity *wrr_entity;
 	struct wrr_rq *wrr_rq = &rq->wrr;
+
+	printk("WRR Enqeue Called: %s (%d)\n", p->comm, p->pid);
 
 	/* spin_lock(wrr_rq->wrr_rq_lock); */
 
@@ -431,6 +475,14 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 
 	init_task_wrr(p); /* initializes the wrr_entity in task_struct */
 	new_entity = &p->wrr;
+
+	/* If on rq already, don't add it */
+	/*
+	if (on_wrr_rq(new_entity)) {
+		printk("Warning: Enqueue called on task %d already in RQ\n",
+				p->pid);
+		return;
+	} */
 
 	/* add it to the queue.*/
 	head = &wrr_entity->run_list;

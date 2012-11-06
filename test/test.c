@@ -255,6 +255,7 @@ static void test(mpz_t number, const char* weight_string)
 	printf("PID of this Process: %d", getpid());
 
 	print_scheduler();
+	//fork();
 	test_change();
 
 	print_current_weight();
