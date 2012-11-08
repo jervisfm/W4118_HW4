@@ -248,7 +248,6 @@ static void do_nothing()
 
 static void test(mpz_t number, const char* weight_string)
 {
-	int ret;
 	double run_time;
 	int wt = atoi(weight_string);
 	do_nothing(); /* make the compiler shut up */
@@ -256,7 +255,7 @@ static void test(mpz_t number, const char* weight_string)
 	printf("PID of this Process: %d", getpid());
 
 	print_scheduler();
-	ret = fork();
+	/* ret = fork();
 	if (ret < 0)
 		printf("ERRROR!!!!\n");
 	else {
@@ -264,7 +263,7 @@ static void test(mpz_t number, const char* weight_string)
 			printf("CHILD\n");
 		else
 			printf("PARENT\n");
-	}
+	} */
 
 	test_change();
 
@@ -303,6 +302,9 @@ int main(int argc, const char *argv[])
 		return EXIT_FAILURE;
 	}
 
+
+	/* Disable buffering on stdout */
+	setvbuf(stdout, NULL, _IONBF, 0);
 
 	test(largenum, argv[2]);
 	/*

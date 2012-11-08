@@ -4327,6 +4327,8 @@ need_resched:
 
 	switch_count = &prev->nivcsw;
 	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+		/* if task is waiting on a signal, set its state to
+		 * running  (i think...) */
 		if (unlikely(signal_pending_state(prev->state, prev))) {
 			prev->state = TASK_RUNNING;
 		} else {
@@ -5289,15 +5291,25 @@ recheck:
 	 * Want to test Scheulder in user land .... */
 	if (strcmp(p->comm,"test") == 0) {
 		struct task_struct *t;
-		struct sched_param my_sp = {.sched_priority = MAX_RT_PRIO - 1};
+		struct sched_param my_sp = {.sched_priority = 0};
 
 		printk("Detected Set Sched called for test program");
 
 		for_each_process(t) {
-			if(strcmp(t->comm, "infinte_loop") == 0) {
+			if(strcmp(t->comm, "infinite") == 0) {
+				int ret;
 				printk("Update SCHE for infinite process"
 					" loop\n");
-				__sched_setscheduler(t, SCHED_WRR,&my_sp,false);
+				ret = __sched_setscheduler(t, SCHED_WRR,
+							   &my_sp,false);
+				if (ret != 0)
+					printk("FAILED TO CHANGE infinite"
+						"prc : %d \n", ret);
+				else {
+					printk("Infinite changed\n");
+					printk("INFT Policy: %d\n", p->policy);
+				}
+				break;
 			}
 		}
 	}

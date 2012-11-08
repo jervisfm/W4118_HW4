@@ -370,10 +370,6 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	if (rq->nr_running <= 0)
 		return NULL;
 
-	/*
-	print_queue(&rq->wrr.run_queue);
-	printk("========\n"); */
-
 	/* if( wrr_rq->nr_running <= 0) {
 		if (printk_ratelimit())
 			printk("WRR NULL PICK TASK CALLED\n");
@@ -406,7 +402,12 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 		printk("Warning : Scheduler WRONLY picked non-WRR task\n");
 
 
-	/* printk("Scheduling %s (%d)\n", p->comm, p->pid); */
+	/*
+	print_queue(&rq->wrr.run_queue);
+	printk("========\n");
+
+	printk("Scheduling %s (%d)\n", p->comm, p->pid);
+	*/
 
 	return p;
 
@@ -444,9 +445,18 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	/* Remove the task from the queue */
 	list_del(&wrr_entity->run_list);
 
+
+	if (wrr_rq->size == 2) {
+		printk("IDIOT called dequeu task");
+		dump_stack();
+	}
+
 	/* update statistics counts */
 	--wrr_rq->nr_running;
 	--wrr_rq->size;
+
+
+
 
 	/* Idle task iMPLM
 	raw_spin_unlock_irq(&rq->lock);
@@ -494,9 +504,13 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	++wrr_rq->nr_running;
 	++wrr_rq->size;
 
-	/*
-	print_queue(&rq->wrr.run_queue);
-	printk("========\n"); */
+
+	if (strcmp(p->comm,"infinite") == 0) {
+		/* print_queue(&rq->wrr.run_queue);
+		printk("========\n"); */
+		printk("Queue Size: %ld\n", wrr_rq->size);
+
+	}
 
 	/*
 	 * TODO: Check and see if we need to use locks here.
@@ -589,9 +603,16 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 		  * we need to be running the same task.
 		  */
 		set_tsk_need_resched(curr);
+
+		/*
 		if (printk_ratelimit(  ))
 			printk("No Need for a requeue !\n");
+		*/
 	}
+
+	/* Debugging print outs ...  */
+	printk("Ticker Queue Size: %ld\n", rq->wrr.size);
+
 }
 
 /* This function is called when a currently running task changes its
