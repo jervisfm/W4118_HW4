@@ -402,12 +402,12 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 		printk("Warning : Scheduler WRONLY picked non-WRR task\n");
 
 
-	/*
+
 	print_queue(&rq->wrr.run_queue);
 	printk("========\n");
 
 	printk("Scheduling %s (%d)\n", p->comm, p->pid);
-	*/
+
 
 	return p;
 

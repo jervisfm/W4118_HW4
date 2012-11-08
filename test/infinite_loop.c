@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
@@ -13,6 +14,7 @@ int main(int argc, char **argv)
 	long counter = 0;
 	while(1) {
 		++counter;
+		sleep(10);
 		/* printf("%ld\n", counter); */
 	}
 }
