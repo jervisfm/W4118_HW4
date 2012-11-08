@@ -393,8 +393,8 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 
 
 
-	print_queue(&rq->wrr.run_queue);
-	printk("========\n");
+	/* print_queue(&rq->wrr.run_queue);
+	printk("========\n"); */
 
 	printk("Scheduling %s (%d)\n", p->comm, p->pid);
 
@@ -646,7 +646,8 @@ static void check_preempt_curr_wrr(struct rq *rq,
 	 *
 	 * I am still leaving the enqueue here b'se I have a catch
 	 * condition to not add duplicate tasks. */
-	enqueue_task_wrr(rq, p, flags);
+
+	/* enqueue_task_wrr(rq, p, flags); */
 }
 
 /* This function is called when a running process has changed its scheduler
