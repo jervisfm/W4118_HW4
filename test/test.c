@@ -299,7 +299,7 @@ static void test(mpz_t number, const char* weight_string)
 			printf("PARENT\n");
 	} */
 
-	test_change();
+	/* test_change(); */
 	/* test_looping();*/
 
 	print_current_weight();
@@ -313,7 +313,7 @@ static void test(mpz_t number, const char* weight_string)
 	run_time = stop_timer();
 	printf("Factorization completed in %f seconds.\n", run_time);
 
-	return;
+
 
 	/* Ask if you want to do graph test ? */
 	printf("Do you want to do automatic weight testing? Y/N:");

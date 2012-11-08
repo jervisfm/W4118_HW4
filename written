@@ -10,26 +10,27 @@ The number we choose to factor was 1234567 because it took resonably well runnin
 The results of testing are presented below: 
 
 Weight, Time to factor 1234567: 
-1,
-2,
-3,
-4,
-5,
-6,
-7,
-8,
-9,
-10,
-11,
-12,
-13,
-14,
-15,
-16,
-17,
-18,
-19,
-20,
+1,5.409075
+2,6.138657
+3,5.367656
+4,5.674330
+5,5.167461
+6,5.349461
+7,5.242863
+8,5.297588
+9,5.508563
+10,5.505240
+11,5.317371
+12,5.726006
+13,7.182729
+14,6.345506
+15,5.924667
+16,6.318807
+17,6.106713
+18,5.905509
+19,5.977849
+20,6.211509
+
 
 Please find the graph in plot.pdf under the header Emulator Graph. 
 

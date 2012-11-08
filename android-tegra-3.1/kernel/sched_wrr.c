@@ -672,6 +672,8 @@ static void check_preempt_curr_wrr(struct rq *rq,
 	 * I am still leaving the enqueue here b'se I have a catch
 	 * condition to not add duplicate tasks. */
 
+	/* Leave it off though: I've found uncommenting it
+	 * causes boot to hang  */
 	/* enqueue_task_wrr(rq, p, flags); */
 }
 
@@ -909,6 +911,81 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 	return result;
 }
 
+/* ========  Multiple CPUs Scheduling Funcitons Below =========*/
+#ifdef CONFIG_SMP
+
+/* Assumes rq->lock is held */
+static void rq_online_wrr(struct rq *rq)
+{
+
+}
+
+/* Assumed rq->lock is held */
+static void rq_offline_wrr(struct rq *rq)
+{
+
+}
+
+
+
+/*
+ * When switch from the rt queue, we bring ourselves to a position
+ * that we might want to pull RT tasks from other runqueues.
+ */
+static void switched_from_wrr(struct rq *rq, struct task_struct *p)
+{
+
+}
+
+
+static void pre_schedule_wrr(struct rq *rq, struct task_struct *prev)
+{
+	/* Try to pull RT tasks here if we lower this rq's prio */
+	if (rq->rt.highest_prio.curr > prev->prio)
+		pull_rt_task(rq);
+}
+
+
+static void post_schedule_wrr(struct rq *rq)
+{
+	push_rt_tasks(rq);
+}
+
+
+/*
+ * If we are not running and we are not going to reschedule soon, we should
+ * try to push tasks away now
+ */
+static void task_woken_wrr(struct rq *rq, struct task_struct *p)
+{
+	if (!task_running(rq, p) &&
+	    !test_tsk_need_resched(rq->curr) &&
+	    has_pushable_tasks(rq) &&
+	    p->rt.nr_cpus_allowed > 1 &&
+	    rt_task(rq->curr) &&
+	    (rq->curr->rt.nr_cpus_allowed < 2 ||
+	     rq->curr->prio <= p->prio))
+		push_rt_tasks(rq);
+}
+
+
+/*
+ * When switch from the rt queue, we bring ourselves to a position
+ * that we might want to pull RT tasks from other runqueues.
+ */
+static void switched_from_wrr(struct rq *rq, struct task_struct *p)
+{
+	/*
+	 * If there are other RT tasks then we will reschedule
+	 * and the scheduling of the other RT tasks will handle
+	 * the balancing. But if we are the last RT task
+	 * we may need to handle the pulling of RT tasks
+	 * now.
+	 */
+	if (p->on_rq && !rq->rt.rt_nr_running)
+		pull_rt_task(rq);
+}
+#endif /* CONFIG_SMP */
 
 /*
  * Simple, special scheduling class for the per-CPU wrr tasks:
@@ -936,6 +1013,12 @@ static const struct sched_class wrr_sched_class = {
 	 * to follow from.
 	 */
 	.select_task_rq		= select_task_rq_wrr,
+	.rq_online              = rq_online_wrr,
+	.rq_offline             = rq_offline_wrr,
+	.pre_schedule		= pre_schedule_wrr,
+	.post_schedule		= post_schedule_wrr,
+	.task_woken		= task_woken_wrr,
+	.switched_from		= switched_from_wrr,
 #endif
 
 	.set_curr_task          = set_curr_task_wrr,
