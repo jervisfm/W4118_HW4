@@ -13,6 +13,6 @@ int main(int argc, char **argv)
 	long counter = 0;
 	while(1) {
 		++counter;
-		/* printf("%ld\n", counter); */
+		printf("%ld\n", counter);
 	}
 }
