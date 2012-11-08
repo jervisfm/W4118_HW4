@@ -435,17 +435,15 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	/* Remove the task from the queue */
 	list_del(&wrr_entity->run_list);
 
-
+	/*
 	if (wrr_rq->size == 2) {
 		printk("IDIOT called dequeu task");
 		dump_stack();
-	}
+	} */
 
 	/* update statistics counts */
 	--wrr_rq->nr_running;
 	--wrr_rq->size;
-
-
 
 
 	/* Idle task iMPLM
