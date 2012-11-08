@@ -246,9 +246,30 @@ static void do_nothing()
 	change_scheduler();
 }
 
+/* Does a timing test on weights 1-20 to factor the given number */
+static void graph_test(mpz_t number)
+{
+	double run_time = 0;
+	int i = 0;
+	FILE *file = fopen("/data/misc/results.txt", "w");
+	for (i = MIN_WEIGHT; i <= MAX_WEIGHT; i++) {
+		set_weight(0,i);
+		printf("Graph Test: Weight = %d\n", i);
+		start_timer();
+		find_factors(number);
+		run_time = stop_timer();
+		printf("Found factors in %f secs\n", run_time);
+		fprintf(file, "%d,%f\n", i, run_time);
+		/* fclean(file); */
+	}
+	printf("Graph test complete.\n");
+	fclose(file);
+}
+
 static void test(mpz_t number, const char* weight_string)
 {
 	double run_time;
+	char c;
 	int wt = atoi(weight_string);
 	do_nothing(); /* make the compiler shut up */
 	printf("Input Weight = %d\n", wt);
@@ -278,7 +299,13 @@ static void test(mpz_t number, const char* weight_string)
 	run_time = stop_timer();
 	printf("Factorization completed in %f seconds.\n", run_time);
 
-
+	/* Ask if you want to do graph test ? */
+	printf("Do you want to do automatic weight testing? Y/N:");
+	c = getchar();
+	if (c == 'Y' || c == 'y')
+		graph_test(number);
+	else
+		printf("Okay. Done\n");
 
 }
 
@@ -310,8 +337,8 @@ int main(int argc, const char *argv[])
 	/*
 	 * TODO:
 	 * - Handle weight argument here
-	 * - actually do the find factors */
-	// find_factors(largenum);
+	 * - actually do the find factors
+	 find_factors(largenum); */
 
 	return EXIT_SUCCESS;
 }
