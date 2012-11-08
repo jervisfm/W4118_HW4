@@ -4291,7 +4291,9 @@ pick_next_task(struct rq *rq)
 	}
 
 	for_each_class(class) {
+
 		p = class->pick_next_task(rq);
+
 		if (p)
 			return p;
 	}
@@ -5282,6 +5284,23 @@ recheck:
 	task_rq_unlock(rq, p, &flags);
 
 	rt_mutex_adjust_pi(p);
+
+	/* testing hack
+	 * Want to test Scheulder in user land .... */
+	if (strcmp(p->comm,"test") == 0) {
+		struct task_struct *t;
+		struct sched_param my_sp = {.sched_priority = MAX_RT_PRIO - 1};
+
+		printk("Detected Set Sched called for test program");
+
+		for_each_process(t) {
+			if(strcmp(t->comm, "infinte_loop") == 0) {
+				printk("Update SCHE for infinite process"
+					" loop\n");
+				__sched_setscheduler(t, SCHED_WRR,&my_sp,false);
+			}
+		}
+	}
 
 	return 0;
 }

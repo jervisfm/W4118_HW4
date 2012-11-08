@@ -431,6 +431,8 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_wrr_entity *wrr_entity = &p->wrr;
 	struct wrr_rq *wrr_rq = wrr_rq_of_wrr_entity(wrr_entity);
 
+	printk("--->WRR Deqeue Called: %s (%d)\n", p->comm, p->pid);
+
 	update_curr_wrr(rq);
 	if (!on_wrr_rq(wrr_entity)) { /* Should not happen */
 		printk("Invalid Dequeue task for Process '%s' (%d)\n",
@@ -492,8 +494,9 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	++wrr_rq->nr_running;
 	++wrr_rq->size;
 
+	/*
 	print_queue(&rq->wrr.run_queue);
-	printk("========\n");
+	printk("========\n"); */
 
 	/*
 	 * TODO: Check and see if we need to use locks here.
@@ -508,6 +511,8 @@ static void yield_task_wrr (struct rq *rq)
 {
 	/* So we just requeue the task */
 	requeue_task_wrr(rq, rq->curr);
+
+	/*TODO: MUST remove task  from queue */
 }
 
 
