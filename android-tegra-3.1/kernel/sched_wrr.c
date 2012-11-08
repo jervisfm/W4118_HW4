@@ -638,9 +638,15 @@ static void check_preempt_curr_wrr(struct rq *rq,
 				   struct task_struct *p, int flags)
 {
 	/* The key for us is that this method is called when a new task
-	 * is woken up after sleep. So just enqueue it */
+	 * is woken up after sleep. So just enqueue it.
+	 *
+	 * Well actually, after looking more closely at try_to_wake_up
+	 * I found that BOTH enqueue_task AND check_preempt_curr are
+	 * CALLED after a task is woken up.
+	 *
+	 * I am still leaving the enqueue here b'se I have a catch
+	 * condition to not add duplicate tasks. */
 	enqueue_task_wrr(rq, p, flags);
-
 }
 
 /* This function is called when a running process has changed its scheduler
