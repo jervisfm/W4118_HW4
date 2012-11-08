@@ -536,7 +536,8 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 	 * (in the exiting case, dequeue_task will be called)
 	 * */
 	update_curr_wrr(rq);
-	prev->se.exec_start = 0;
+	/* disabling this code : causes crash in SMP
+	prev->se.exec_start = 0; */
 
 	/*
 	 * Okay, this cause causes alot of redudant enqueues, so I think
