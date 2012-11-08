@@ -1,0 +1,21 @@
+Scheduler Testing:
+=================
+
+We tested our scheduler from user land as we were able to get to work there. So essentially, the environment we created was the following: 5 infinite loop do nothing programs with a weight of 10, and then 1 prime factorization program with varibale weights. 
+
+The number we choose to factor was 1234567 because it took resonably well running on the Nexus 7 device (not too short or too long). 
+
+The results of testing are presented below: 
+
+Trial 1: T
+
+
+Trial 2
+
+
+Trial 3
+
+
+
+Average Test 
+
