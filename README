@@ -1,6 +1,17 @@
 
 
-References:
-==========
+References Consulted:
+======================
 Team21 (our own team) Homework 2 Assignment test code
-High resolution timer in Linx - http://www.gnu.org/software/libc/manual/html_node/High_002dResolution-Calendar.html
+High resolution timer in Linux - http://www.gnu.org/software/libc/manual/html_node/High_002dResolution-Calendar.html
+Professional Linux Architecture Book, Scheduling chapter. 
+Spoken with Professor Nieh to discuss HW 4 (help on debuggging)
+
+
+
+spin_lock_irq
+
+disable_preemption()
+
+test sleep with one queue
+test

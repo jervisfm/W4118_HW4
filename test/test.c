@@ -236,15 +236,6 @@ static void test_change()
 
 }
 
-static void do_nothing()
-{
-	return;
-	test_change();
-	print_current_weight();
-	is_wrr_policy(0);
-	print_scheduler();
-	change_scheduler();
-}
 
 /* Does a timing test on weights 1-20 to factor the given number */
 static void graph_test(mpz_t number)
@@ -264,6 +255,28 @@ static void graph_test(mpz_t number)
 	}
 	printf("Graph test complete.\n");
 	fclose(file);
+}
+
+static void test_looping()
+{
+	int i = 0;
+	int MAX =  100;
+	for (i =0; i < MAX; ++i) {
+		sleep(1);
+		printf("%d\n", i);
+	}
+}
+
+static void do_nothing()
+{
+	return;
+	test_change();
+	print_current_weight();
+	is_wrr_policy(0);
+	print_scheduler();
+	change_scheduler();
+	test_looping();
+
 }
 
 static void test(mpz_t number, const char* weight_string)
@@ -287,7 +300,8 @@ static void test(mpz_t number, const char* weight_string)
 	} */
 
 	test_change();
-
+	test_looping();
+	return;
 	print_current_weight();
 
 	set_weight(0, wt);
@@ -298,6 +312,8 @@ static void test(mpz_t number, const char* weight_string)
 	find_factors(number);
 	run_time = stop_timer();
 	printf("Factorization completed in %f seconds.\n", run_time);
+
+	return;
 
 	/* Ask if you want to do graph test ? */
 	printf("Do you want to do automatic weight testing? Y/N:");

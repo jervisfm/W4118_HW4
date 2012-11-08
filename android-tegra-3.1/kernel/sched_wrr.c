@@ -159,6 +159,9 @@ static void init_task_wrr(struct task_struct *p)
 		wrr_entity->time_left =
 			wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
 	}
+
+	/* Initialize the list head just to be safe */
+	INIT_LIST_HEAD(&wrr_entity->run_list);
 }
 
 /* Return a pointer to the embedded sched_wrr_entity */
@@ -309,9 +312,15 @@ static void requeue_task_wrr(struct rq *rq, struct task_struct *p)
 	if (wrr_rq->size == 1)
 		return;
 
+
+	spin_lock(&wrr_rq->wrr_rq_lock);
+
 	/* There is more than 1 task in queue, let's move this
 	 * one to the back of the queue */
 	list_move_tail(&wrr_entity->run_list, head);
+
+
+	spin_unlock(&wrr_rq->wrr_rq_lock);
 }
 
 /* Update the current runtime statistics. Modeled after
@@ -422,6 +431,8 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_wrr_entity *wrr_entity = &p->wrr;
 	struct wrr_rq *wrr_rq = wrr_rq_of_wrr_entity(wrr_entity);
 
+	spin_lock(&wrr_rq->wrr_rq_lock);
+
 	printk("--->WRR Deqeue Called: %s (%d)\n", p->comm, p->pid);
 
 	update_curr_wrr(rq);
@@ -446,6 +457,8 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	--wrr_rq->size;
 
 
+	spin_unlock(&wrr_rq->wrr_rq_lock);
+
 	/* Idle task iMPLM
 	raw_spin_unlock_irq(&rq->lock);
 	printk(KERN_ERR "bad: scheduling from the wrr thread!\n");
@@ -469,7 +482,7 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 
 	printk("WRR Enqeue Called: %s (%d)\n", p->comm, p->pid);
 
-	/* spin_lock(wrr_rq->wrr_rq_lock); */
+
 
 	wrr_entity = &wrr_rq->run_queue;
 
@@ -482,6 +495,8 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 				p->pid);
 		return;
 	}
+
+	spin_lock(&wrr_rq->wrr_rq_lock);
 
 	/* add it to the queue.*/
 	head = &wrr_entity->run_list;
@@ -504,7 +519,14 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	 */
 
 
-	/* spin_unlock(wrr_rq->wrr_rq_lock); */
+	spin_unlock(&wrr_rq->wrr_rq_lock);
+}
+
+/* Find the CPU with the lightest load
+ * @do_lock indicates if we should lock. */
+static int find_lightest_cpu_runqueue(int do_lock)
+{
+	return 0;
 }
 
 /* This function is called when a task voluntarily gives up running */
