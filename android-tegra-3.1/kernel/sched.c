@@ -5309,7 +5309,6 @@ recheck:
 					printk("Infinite changed\n");
 					printk("INFT Policy: %d\n", p->policy);
 				}
-				break;
 			}
 		}
 	}
