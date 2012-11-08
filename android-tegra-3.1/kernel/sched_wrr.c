@@ -549,6 +549,9 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 	 * */
 	update_curr_wrr(rq);
 	prev->se.exec_start = 0;
+
+	if (on_wrr_rq(&prev->wrr))
+		enqueue_task_wrr(rq, prev, 0);
 }
 
 
@@ -874,9 +877,6 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 static const struct sched_class wrr_sched_class = {
 	/* .next is Fair Scheduler class scheduler */
 	.next			= &fair_sched_class,
-
-	/* no enqueue/yield_task for idle tasks */
-	/* TODO: Add enqueue/yield task for WRR */
 
 	.enqueue_task 		= enqueue_task_wrr,
 
