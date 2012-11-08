@@ -51,6 +51,8 @@
  * the default WRR params which are: Weight = 10, TimeLeft = 10,
  * TimeSlice=100. This comes out to be 100milliseoncds slot.
  *
+ * May want to try set kthread policy to NORMAL/WRR if have booting issues.
+ *
  */
 
 /* Forward declaration. Definition found at bottom of this file */
@@ -405,7 +407,7 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	/* print_queue(&rq->wrr.run_queue);
 	printk("========\n"); */
 
-	printk("Scheduling %s (%d)\n", p->comm, p->pid);
+	/* printk("Scheduling %s (%d)\n", p->comm, p->pid); */
 
 
 	return p;
@@ -433,7 +435,7 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 
 	spin_lock(&wrr_rq->wrr_rq_lock);
 
-	printk("--->WRR Deqeue Called: %s (%d)\n", p->comm, p->pid);
+	/* printk("--->WRR Deqeue Called: %s (%d)\n", p->comm, p->pid); */
 
 	update_curr_wrr(rq);
 	if (!on_wrr_rq(wrr_entity)) { /* Should not happen */
@@ -480,7 +482,7 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_wrr_entity *wrr_entity;
 	struct wrr_rq *wrr_rq = &rq->wrr;
 
-	printk("WRR Enqeue Called: %s (%d)\n", p->comm, p->pid);
+	/* printk("WRR Enqeue Called: %s (%d)\n", p->comm, p->pid); */
 
 
 
@@ -526,6 +528,8 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
  * @do_lock indicates if we should lock. */
 static int find_lightest_cpu_runqueue(int do_lock)
 {
+
+
 	return 0;
 }
 
@@ -629,7 +633,7 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 	}
 
 	/* Debugging print outs ...  */
-	printk("Ticker Queue Size: %ld\n", rq->wrr.size);
+	/* printk("Ticker Queue Size: %ld\n", rq->wrr.size); */
 
 }
 

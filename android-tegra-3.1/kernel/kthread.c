@@ -180,7 +180,7 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 		 */
 		/* TODO: CHange this to SCHED_WRR
 		 */
-		sched_setscheduler_nocheck(create.result, SCHED_NORMAL, &param);
+		sched_setscheduler_nocheck(create.result, SCHED_WRR, &param);
 		set_cpus_allowed_ptr(create.result, cpu_all_mask);
 	}
 	return create.result;

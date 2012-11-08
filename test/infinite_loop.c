@@ -15,9 +15,9 @@ int main(int argc, char **argv)
 	while(1) {
 		++counter;
 
-		/* sleep(10);
-		printf("%ld\n", counter);
-		*/
+		sleep(1);
+		/* printf("%ld\n", counter); */
+
 
 	}
 }

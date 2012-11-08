@@ -300,8 +300,8 @@ static void test(mpz_t number, const char* weight_string)
 	} */
 
 	test_change();
-	test_looping();
-	return;
+	/* test_looping();*/
+
 	print_current_weight();
 
 	set_weight(0, wt);
