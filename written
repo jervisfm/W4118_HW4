@@ -1,6 +1,8 @@
 Scheduler Testing:
 =================
 
+Emulator
+---------
 We tested our scheduler from user land as we were able to get to work there. So essentially, the environment we created was the following: 5 infinite loop do nothing programs with a weight of 10, and then 1 prime factorization program with varibale weights. 
 
 The number we choose to factor was 1234567 because it took resonably well running on the emulator running on my machine (not too short or too long). 
@@ -29,14 +31,13 @@ Weight, Time to factor 1234567:
 19,
 20,
 
-
-
-Trial 2
-
-
-Trial 3
+Please find the graph in plot.pdf under the header Emulator Graph. 
 
 
 
-Average Test 
+Nexus 7 Device
+--------------
+Testing the scheduler on the actual device, we saw the following times:
+
+Please find the graph in plot.pdf under the header Nexus 7 graph. 
 
