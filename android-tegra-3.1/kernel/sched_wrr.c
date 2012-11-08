@@ -341,16 +341,6 @@ static void update_curr_wrr(struct rq *rq)
 	cpuacct_charge(curr, delta_exec);
 }
 
-/*
- * This function checks if a task that entered the runnable state should
-   preempt the currently running task.
- */
-static void check_preempt_curr_wrr(struct rq *rq, struct task_struct *p, int flags)
-{
-	/* We never do any preemption since we follow a FIFO Round-Robin
-	 * policy that has no notion of priorities. */
-}
-
 /* This function chooses the most appropriate task eligible to run next.*/
 static struct task_struct *pick_next_task_wrr(struct rq *rq)
 {
@@ -489,12 +479,11 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	new_entity = &p->wrr;
 
 	/* If on rq already, don't add it */
-	/*
 	if (on_wrr_rq(new_entity)) {
 		printk("Warning: Enqueue called on task %d already in RQ\n",
 				p->pid);
 		return;
-	} */
+	}
 
 	/* add it to the queue.*/
 	head = &wrr_entity->run_list;
@@ -526,7 +515,8 @@ static void yield_task_wrr (struct rq *rq)
 	/* So we just requeue the task */
 	requeue_task_wrr(rq, rq->curr);
 
-	/*TODO: MUST remove task  from queue */
+	/*TODO: MUST remove task  from queue???
+	 * don't think i need to do this actually  */
 }
 
 
@@ -550,8 +540,12 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 	update_curr_wrr(rq);
 	prev->se.exec_start = 0;
 
-	if (on_wrr_rq(&prev->wrr))
+	/*
+	 * Okay, this cause causes alot of redudant enqueues, so I think
+	 * it's wrong.
+	 if (on_wrr_rq(&prev->wrr))
 		enqueue_task_wrr(rq, prev, 0);
+	*/
 }
 
 
@@ -634,6 +628,19 @@ static void set_curr_task_wrr(struct rq *rq)
 	p->se.exec_start = rq->clock_task;
 
 	rq->wrr.curr = &p->wrr;
+}
+
+/*
+ * This function checks if a task that entered the runnable state should
+   preempt the currently running task.
+ */
+static void check_preempt_curr_wrr(struct rq *rq,
+				   struct task_struct *p, int flags)
+{
+	/* The key for us is that this method is called when a new task
+	 * is woken up after sleep. So just enqueue it */
+	enqueue_task_wrr(rq, p, flags);
+
 }
 
 /* This function is called when a running process has changed its scheduler
