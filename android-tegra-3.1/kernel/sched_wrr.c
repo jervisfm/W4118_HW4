@@ -7,7 +7,7 @@
 
 /*
  * Structure of file based on sched_idletask.c
- * implmementation of an idle task scheduler.
+ * implementation of an idle task scheduler.
  *
  * Methods not currently implemented with functionality.
  *
@@ -53,6 +53,8 @@
  *
  * May want to try set kthread policy to NORMAL/WRR if have booting issues.
  *
+ * for HR timer, want to look at rt_period_timer
+ *
  */
 
 /* Forward declaration. Definition found at bottom of this file */
@@ -60,12 +62,15 @@ static const struct sched_class wrr_sched_class;
 /* We use this function here. It's defined in sched.c #5109 */
 static bool check_same_owner(struct task_struct *p);
 
+/* Define general locks */
+//static spinlock_t SET_WEIGHT_LOCK = SPIN_LOCK_UNLOCKED;
+static DEFINE_SPINLOCK(SET_WEIGHT_LOCK);
+
 #ifdef CONFIG_SMP
-static int
-select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
-{
-	return task_cpu(p); /* wrr tasks as never migrated */
-}
+
+/* Define locks needed for SMP case */
+
+
 #endif /* CONFIG_SMP */
 
 /* Returns the size of the list, assuming that it has
@@ -339,7 +344,7 @@ static void update_curr_wrr(struct rq *rq)
 		return;
 
 	delta_exec = rq->clock_task - curr->se.exec_start;
-	if(unlikely((s64)delta_exec < 0))
+	if (unlikely((s64)delta_exec < 0))
 		delta_exec = 0;
 
 	schedstat_set(curr->se.statistics.exec_max,
@@ -352,7 +357,8 @@ static void update_curr_wrr(struct rq *rq)
 	cpuacct_charge(curr, delta_exec);
 }
 
-/* This function chooses the most appropriate task eligible to run next.*/
+/* This function chooses the most appropriate task eligible to run next.
+ * This is called with Interrupts DISBALED. and us holding the rq->lock */
 static struct task_struct *pick_next_task_wrr(struct rq *rq)
 {
 	/* TO be throughly tested. */
@@ -457,7 +463,7 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	/* update statistics counts */
 	--wrr_rq->nr_running;
 	--wrr_rq->size;
-
+	wrr_rq->total_weight -= wrr_entity->weight;
 
 	spin_unlock(&wrr_rq->wrr_rq_lock);
 
@@ -507,6 +513,8 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	/* update statistics counts */
 	++wrr_rq->nr_running;
 	++wrr_rq->size;
+	wrr_rq->total_weight += wrr_entity->weight;
+
 
 
 	if (strcmp(p->comm,"infinite") == 0) {
@@ -524,11 +532,18 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	spin_unlock(&wrr_rq->wrr_rq_lock);
 }
 
+
 /* Find the CPU with the lightest load
  * @do_lock indicates if we should lock. */
-static int find_lightest_cpu_runqueue(int do_lock)
+static int find_lightest_cpu_runqueue()
 {
+	int cpu, best_cpu, counter, weight, lowest_weight;
 
+	for_each_online_cpu(cpu) {
+		++counter;
+	}
+
+	printk("We found %d Online CPUs\n", counter);
 
 	return 0;
 }
@@ -575,7 +590,8 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 
 
 /* This function is mostly called from time tick functions; it might lead to
-   process switch.  This drives the running preemption.*/
+   process switch.  This drives the running preemption. It is called
+   with *interrupts* DISABLED */
 static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 {
 	/* Still to be tested  */
@@ -762,7 +778,7 @@ static unsigned int get_rr_interval_wrr(struct rq *rq, struct task_struct *task)
 {
 	/* To be implemented */
 	if (task == NULL)
-		return -1;
+		return -EINVAL;
 	return task->wrr.weight * SCHED_WRR_TIME_QUANTUM /
 			SCHED_WRR_TICK_FACTOR ;
 }
@@ -809,6 +825,9 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 
 	struct task_struct* task = NULL;
 	struct pid *pid_struct = NULL;
+	struct rq *rq = NULL;
+	struct wrr_rq *wrr_rq = NULL;
+	int old_weight;
 
 	if (pid < 0)
 		return -EINVAL;
@@ -831,8 +850,16 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 		task = get_pid_task(pid_struct, PIDTYPE_PID);
 	}
 
+	/* Another sanity check */
+	if (task == NULL)
+		return -EINVAL;
+
 	if (task->policy != SCHED_WRR)
 		return -EINVAL;
+
+
+	/* remember the old_weight */
+	old_weight = task->wrr.weight;
 
 	/*
 	 * Check if user is root.
@@ -862,6 +889,15 @@ SYSCALL_DEFINE2(sched_setweight, pid_t, pid, int, weight)
 	/* Update the time slice computation */
 	update_timings_after_wt_change(task);
 
+	spin_lock(&SET_WEIGHT_LOCK);
+
+	/* Update the total weight */
+	rq = task_rq(task);
+	wrr_rq = &rq->wrr;
+	wrr_rq->total_weight -= old_weight;
+	wrr_rq->total_weight += weight;
+
+	spin_unlock(&SET_WEIGHT_LOCK);
 	return 0;
 }
 
@@ -911,21 +947,23 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 	return result;
 }
 
-/* ========  Multiple CPUs Scheduling Funcitons Below =========*/
+/* ========  Multiple CPUs Scheduling Functions Below =========*/
 #ifdef CONFIG_SMP
 
 /* Assumes rq->lock is held */
 static void rq_online_wrr(struct rq *rq)
 {
+	/* Called when a CPU goes online  */
+	/*Don't think necessary for our puporses */
 
 }
 
-/* Assumed rq->lock is held */
+/* Assumes rq->lock is held */
 static void rq_offline_wrr(struct rq *rq)
 {
-
+	/* Called when a CPU goes offline  */
+	/*Don't think necessary for our puporses */
 }
-
 
 
 /*
@@ -934,21 +972,20 @@ static void rq_offline_wrr(struct rq *rq)
  */
 static void switched_from_wrr(struct rq *rq, struct task_struct *p)
 {
-
+	/* This is just a heads up that the current task is going
+	 * to be switched *very* soon */
 }
 
 
 static void pre_schedule_wrr(struct rq *rq, struct task_struct *prev)
 {
-	/* Try to pull RT tasks here if we lower this rq's prio */
-	if (rq->rt.highest_prio.curr > prev->prio)
-		pull_rt_task(rq);
+	/* From looking at sched.c don't think this is needed */
 }
 
 
 static void post_schedule_wrr(struct rq *rq)
 {
-	push_rt_tasks(rq);
+	/* From looking at sched.c don't think this is needed */
 }
 
 
@@ -958,7 +995,11 @@ static void post_schedule_wrr(struct rq *rq)
  */
 static void task_woken_wrr(struct rq *rq, struct task_struct *p)
 {
-	if (!task_running(rq, p) &&
+	/* Called when a task is woken up */
+
+
+	/* OLD RT CODE
+	 *  if (!task_running(rq, p) &&
 	    !test_tsk_need_resched(rq->curr) &&
 	    has_pushable_tasks(rq) &&
 	    p->rt.nr_cpus_allowed > 1 &&
@@ -966,25 +1007,15 @@ static void task_woken_wrr(struct rq *rq, struct task_struct *p)
 	    (rq->curr->rt.nr_cpus_allowed < 2 ||
 	     rq->curr->prio <= p->prio))
 		push_rt_tasks(rq);
+	*/
 }
 
-
-/*
- * When switch from the rt queue, we bring ourselves to a position
- * that we might want to pull RT tasks from other runqueues.
- */
-static void switched_from_wrr(struct rq *rq, struct task_struct *p)
+static int
+select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 {
-	/*
-	 * If there are other RT tasks then we will reschedule
-	 * and the scheduling of the other RT tasks will handle
-	 * the balancing. But if we are the last RT task
-	 * we may need to handle the pulling of RT tasks
-	 * now.
-	 */
-	if (p->on_rq && !rq->rt.rt_nr_running)
-		pull_rt_task(rq);
+	return task_cpu(p); /* wrr tasks as never migrated */
 }
+
 #endif /* CONFIG_SMP */
 
 /*
@@ -1012,13 +1043,13 @@ static const struct sched_class wrr_sched_class = {
 	 * SMP support. sched_rt.c Should give a good example
 	 * to follow from.
 	 */
-	.select_task_rq		= select_task_rq_wrr,
-	.rq_online              = rq_online_wrr,
-	.rq_offline             = rq_offline_wrr,
-	.pre_schedule		= pre_schedule_wrr,
-	.post_schedule		= post_schedule_wrr,
-	.task_woken		= task_woken_wrr,
-	.switched_from		= switched_from_wrr,
+	.select_task_rq		= select_task_rq_wrr, //imp
+	.rq_online              = rq_online_wrr, // not imp
+	.rq_offline             = rq_offline_wrr,//not imp
+	.pre_schedule		= pre_schedule_wrr, // not imp
+	.post_schedule		= post_schedule_wrr, // not imp
+	.task_woken		= task_woken_wrr, // CALLED AFTER task woken
+	.switched_from		= switched_from_wrr, // not imp
 #endif
 
 	.set_curr_task          = set_curr_task_wrr,

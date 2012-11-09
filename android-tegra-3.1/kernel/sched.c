@@ -432,6 +432,8 @@ struct wrr_rq {
 	/* Currently running entity on this WRR run queue
 	 * It's NULL if nothing is running */
 	struct sched_wrr_entity *curr;
+	/* the total weight of the tasks in this run queue*/
+	unsigned long total_weight;
 
 };
 
@@ -8021,7 +8023,9 @@ static void init_wrr_rq(struct wrr_rq *wrr_rq)
 	wrr_rq->nr_running = 0;
 	wrr_rq->size = 0;
 	wrr_rq->curr = NULL;
+	wrr_rq->total_weight = 0;
 	spin_lock_init(&(wrr_rq->wrr_rq_lock));
+
 
 	/* Initialize the run queue list */
 	wrr_entity = &wrr_rq->run_queue;
