@@ -402,7 +402,7 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 
 	/* Recompute the time left + time slice value incase weight
 	 * of task has been changed */
-	update_timings(p);
+	/* update_timings(p); */
 
 	/* Sanity check */
 	if (p->policy != SCHED_WRR)
@@ -416,6 +416,15 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	printk("Scheduling %s (%d) on  CPU %d\n | QS: %ld\n",
 			p->comm, p->pid, smp_processor_id(), rq->wrr.size);
 
+
+	if (strcmp(p->comm, "AudioCache call") == 0) {
+		print_queue(&rq->wrr.run_queue);
+
+		/*
+		if (GLOBAL_TICK_COUNT == 10)
+			panic("want to sotp here");
+		*/
+	}
 
 	return p;
 
@@ -603,6 +612,11 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 	/* Update the current run time statistics. */
 	update_curr_wrr(rq);
 
+	if (strcmp(curr->comm, "AudioCache call") == 0) {
+		printk("Turns left %d\n",
+			wrr_entity->time_left - 1);
+	}
+
 
 	/*
 	 * each tick is worth 10 milliseconds.
@@ -624,13 +638,24 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 	printk("\n");
 	*/
 
+	if (strcmp(curr->comm, "AudioCache call") == 0) {
+			printk("Time is over for you\n");
+	}
+
 	/* the time_slice is in milliseconds and we need to
 	 * convert it to ticks units */
 	wrr_entity->time_left = wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
 
+
 	/* Requeue to the end of the queue if we are not the only
 	 * task on the queue (i.e. if there is more than 1 task) */
 	if (wrr_entity->run_list.prev != wrr_entity->run_list.next) {
+
+
+		if (strcmp(curr->comm, "AudioCache call") == 0) {
+			printk("Calling Requue on AudioCache\n");
+		}
+
 		requeue_task_wrr(rq, curr);
 		/* Set rescheduler for later since this function
 		 * is called during a timer interrupt */
