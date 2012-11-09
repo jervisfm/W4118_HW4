@@ -409,11 +409,12 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 		printk("Warning : Scheduler WRONLY picked non-WRR task\n");
 
 
-
-	/* print_queue(&rq->wrr.run_queue);
+	/*
+	print_queue(&rq->wrr.run_queue);
 	printk("========\n"); */
 
-	/* printk("Scheduling %s (%d)\n", p->comm, p->pid); */
+	printk("Scheduling %s (%d) on  CPU %d\n | QS: %ld\n",
+			p->comm, p->pid, smp_processor_id(), rq->wrr.size);
 
 
 	return p;
@@ -441,7 +442,7 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 
 	spin_lock(&wrr_rq->wrr_rq_lock);
 
-	/* printk("--->WRR Deqeue Called: %s (%d)\n", p->comm, p->pid); */
+	 printk("--->WRR Deqeue Called: %s (%d)\n", p->comm, p->pid);
 
 	update_curr_wrr(rq);
 	if (!on_wrr_rq(wrr_entity)) { /* Should not happen */
@@ -488,7 +489,7 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_wrr_entity *wrr_entity;
 	struct wrr_rq *wrr_rq = &rq->wrr;
 
-	/* printk("WRR Enqeue Called: %s (%d)\n", p->comm, p->pid); */
+	printk("WRR Enqeue Called: %s (%d)\n", p->comm, p->pid);
 
 
 
@@ -642,14 +643,20 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 		  */
 		set_tsk_need_resched(curr);
 
-		/*
+
 		if (printk_ratelimit(  ))
 			printk("No Need for a requeue !\n");
-		*/
+
 	}
+
 
 	/* Debugging print outs ...  */
 	/* printk("Ticker Queue Size: %ld\n", rq->wrr.size); */
+
+	if (strcmp(curr->comm, "AudioCache call") == 0) {
+		print_queue(&rq->wrr.run_queue);
+		printk("========\n");
+	}
 
 }
 
