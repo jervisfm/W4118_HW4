@@ -160,17 +160,13 @@ static void init_task_wrr(struct task_struct *p)
 	if (wrr_entity->weight == SCHED_WRR_DEFAULT_WEIGHT ||
 	    !valid_weight(wrr_entity->weight)) {
 
-		printk("Condition 1: %u\n", wrr_entity->weight);
-
 		wrr_entity->weight = SCHED_WRR_DEFAULT_WEIGHT;
-		printk("Condition 1-Post: %u\n", wrr_entity->weight);
+
 		wrr_entity->time_slice =
 			SCHED_WRR_DEFAULT_WEIGHT * SCHED_WRR_TIME_QUANTUM;
 		wrr_entity->time_left =
 			wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
 	} else { /* Use the current weight value */
-		printk("Condition 2 : %u\n", wrr_entity->weight);
-
 		wrr_entity->time_slice =
 			wrr_entity->weight * SCHED_WRR_TIME_QUANTUM;
 		wrr_entity->time_left =
@@ -423,8 +419,10 @@ static struct task_struct *pick_next_task_wrr(struct rq *rq)
 	print_queue(&rq->wrr.run_queue);
 	printk("========\n"); */
 
-	printk("Scheduling %s (%d) on  CPU %d\n | QS: %ld\n",
-			p->comm, p->pid, smp_processor_id(), rq->wrr.size);
+	/*
+	printk("Scheduling %s (%d) on  CPU %d\n | QS: %ld | RQ_WT:%u\n",
+			p->comm, p->pid, smp_processor_id(), rq->wrr.size,
+			wrr_rq->total_weight); */
 
 
 	if (strcmp(p->comm, "AudioCache call") == 0) {
@@ -461,7 +459,7 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 
 	spin_lock(&wrr_rq->wrr_rq_lock);
 
-	 printk("--->WRR Deqeue Called: %s (%d)\n", p->comm, p->pid);
+	/* printk("--->WRR Deqeue Called: %s (%d)\n", p->comm, p->pid); */
 
 	update_curr_wrr(rq);
 	if (!on_wrr_rq(wrr_entity)) { /* Should not happen */
@@ -484,14 +482,17 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	--wrr_rq->nr_running;
 	--wrr_rq->size;
 
+	/*
 	printk("Deq Before Weight: %u | %u\n", wrr_rq->total_weight,
 		wrr_entity->weight);
+	*/
 
 	wrr_rq->total_weight -= wrr_entity->weight;
 
+	/*
 	printk("Deq After Weight change : %u | %u\n", wrr_rq->total_weight,
 		wrr_entity->weight);
-
+	*/
 
 	spin_unlock(&wrr_rq->wrr_rq_lock);
 
@@ -516,7 +517,7 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_wrr_entity *wrr_entity;
 	struct wrr_rq *wrr_rq = &rq->wrr;
 
-	printk("WRR Enqeue Called: %s (%d)\n", p->comm, p->pid);
+	/* printk("WRR Enqeue Called: %s (%d)\n", p->comm, p->pid); */
 
 
 
@@ -542,19 +543,21 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	++wrr_rq->nr_running;
 	++wrr_rq->size;
 
+	/*
 	printk("Before Weight: %u | %u\n", wrr_rq->total_weight,
 		new_entity->weight);
-
+	*/
 	wrr_rq->total_weight += new_entity->weight;
 
+	/*
 	printk("After Weight change : %u | %u\n", wrr_rq->total_weight,
 		new_entity->weight);
+	*/
 
 	if (strcmp(p->comm,"infinite") == 0) {
 		/* print_queue(&rq->wrr.run_queue);
 		printk("========\n"); */
 		printk("Queue Size: %ld\n", wrr_rq->size);
-
 	}
 
 	/*
@@ -572,7 +575,7 @@ static int find_lightest_cpu_runqueue()
 {
 	int cpu, best_cpu, counter, weight;
 	counter = 0;
-	int lowest_weight = SCHED_WRR_MAX_WEIGHT + 1;
+	int lowest_weight = INT_MAX;
 	best_cpu = -1; /* assume no best cpu */
 	struct rq *rq;
 	struct wrr_rq *wrr_rq;
@@ -582,7 +585,7 @@ static int find_lightest_cpu_runqueue()
 		weight = wrr_rq->total_weight;
 
 
-		printk("Weight of CPU %d: %u\n", cpu, weight);
+		/* printk("Weight of CPU %d: %u\n", cpu, weight); */
 
 		if (weight < lowest_weight) {
 			lowest_weight = weight;
@@ -592,7 +595,7 @@ static int find_lightest_cpu_runqueue()
 		++counter;
 	}
 
-	printk("We found %d Online CPUs\n", counter);
+	/* printk("We found %d Online CPUs\n", counter); */
 
 	return best_cpu;
 }
@@ -1093,7 +1096,7 @@ select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 		return task_cpu(p); /* */
 	}
 	else {
-		printk("Choosing Lowest CPU: %d\n", lowest_cpu);
+		/* printk("Choosing Lowest CPU: %d\n", lowest_cpu); */
 		return lowest_cpu;
 	}
 
