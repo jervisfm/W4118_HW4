@@ -102,7 +102,7 @@ static int list_size(struct list_head *head)
 }
 
 /*  this is a test hr timer function */
-static int print_current_time()
+static enum hrtimer_restart print_current_time()
 {
 	struct timespec now;
 	getnstimeofday(&now);
@@ -110,6 +110,8 @@ static int print_current_time()
 	printk("Test Time: second=%ld\nnano_second=%ld\n",
 				now.tv_sec, now.tv_nsec);
 	printk("\n");
+
+	return HRTIMER_RESTART;
 
 }
 
@@ -641,10 +643,14 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 {
 	/* Still to be tested  */
-	ktime_t now;
-	ktime_t delta;
-	struct sched_wrr_entity *wrr_entity = &curr->wrr;
+	ktime_t period_interval_ktime;
 	struct timespec now;
+	struct timespec period =
+		{ .tv_nsec = SCHED_WRR_REBALANCE_TIME_PERIOD_NS, .tv_sec = 0};
+
+
+	struct sched_wrr_entity *wrr_entity = &curr->wrr;
+
 	getnstimeofday(&now);
 
 	/* Update the current run time statistics. */
@@ -657,9 +663,8 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 
 
 	/* let's move the timer forward */
-	now = hrtimer_cb_get_time(&wrr_rebalance_timer);
-	delta = 10;
-	hrtimer_forward(&wrr_rebalance_timer, now, rt_b->rt_period);
+	period_interval_ktime = timespec_to_ktime(period);
+	hrtimer_forward_now(&wrr_rebalance_timer, period_interval_ktime);
 
 
 	/*
