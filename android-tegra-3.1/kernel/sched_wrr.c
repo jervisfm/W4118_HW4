@@ -995,15 +995,36 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 /* ========  Multiple CPUs Scheduling Functions Below =========*/
 #ifdef CONFIG_SMP
 
+static int can_do_move(struct wrr_rq *highest_wrr_rq,
+			struct wrr_rq *lowest_wrr_rq) {
+
+	if (highest_wrr_rq == NULL || lowest_wrr_rq == NULL)
+		return;
+
+
+
+}
+
 /* performs wrr rq loading balance. */
 static void wrr_rq_load_balance ()
 {
 	int cpu;
+	int dest_cpu; /* id of cpu to move to */
 	struct rq *rq,
 	struct wrr_rq *lowest_wrr_rq, *highest_wrr_rq, *curr_wrr_rq;
+	struct wrr_sched_entity *heaviest_task_on_highest_wrr_rq;
+	struct wrr_sched_entity *curr_entity;
+	struct list_head *curr;
+	struct list_head *head;
+	struct task_struct *task_to_move;
+	struct rq *rq_of_task_to_move;
+	struct rq *rq_of_lowest_wrr; /*rq of thing with smallest weight */
+
 	int counter = 1;
 	int lowest_weight = INT_MAX;
 	int highest_weight = INT_MIN;
+
+	int largest_weight = INT_MIN; /* used for load imblance issues*/
 
 	for_each_online_cpu(cpu) {
 		rq = cpu_rq(cpu);
@@ -1032,7 +1053,37 @@ static void wrr_rq_load_balance ()
 		return;
 
 
+	/* See if we can do move  */
+	/* Need to make sure that we don't cause a load imbalance */
+	head = &highest_wrr_rq->run_queue.run_list;
+	for (curr = head->next; curr != head; curr = curr->next) {
+		curr_entity = list_entry(curr, struct sched_wrr_entity,
+					run_list);
+		if (curr_entity->weight > largest_weight)
+			heaviest_task_on_highest_wrr_rq = curr_entity;
+	}
 
+
+	if (heaviest_task_on_highest_wrr_rq.weight +
+			lowest_wrr_rq->total_weight >=
+				highest_wrr_rq->total_weight )
+		/* there is an imbalance issues here */
+		return;
+
+
+	/* Okay, let's move the task */
+	rq_of_lowest_wrr = task_rq(
+				container_of(lowest_wrr_rq,
+						struct task_struct, wrr));
+	dest_cpu = rq_of_lowest_wrr->cpu;
+	task_to_move = container_of(heaviest_task_on_highest_wrr_rq,
+				    struct task_struct, wrr);
+
+	rq_of_task_to_move = task_rq(task_to_move);
+	deactivate_task(rq_of_task_to_move ,task_to_move, 0);
+
+	set_task_cpu(task_to_move, dest_cpu);
+	activate_task(rq_of_lowest_wrr , task_to_move, 0);
 
 }
 
