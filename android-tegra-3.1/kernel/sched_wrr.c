@@ -653,10 +653,11 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 	/* Debugging print outs ...  */
 	/* printk("Ticker Queue Size: %ld\n", rq->wrr.size); */
 
+	/*
 	if (strcmp(curr->comm, "AudioCache call") == 0) {
 		print_queue(&rq->wrr.run_queue);
 		printk("========\n");
-	}
+	} */
 
 }
 
