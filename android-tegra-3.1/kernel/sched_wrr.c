@@ -102,7 +102,7 @@ static int list_size(struct list_head *head)
 }
 
 /*  this is a test hr timer function */
-static enum hrtimer_restart print_current_time(void)
+static enum hrtimer_restart print_current_time(struct hrtimer* timer)
 {
 	struct timespec now;
 	getnstimeofday(&now);
@@ -1037,19 +1037,14 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 	return result;
 }
 
-/* ========  Multiple CPUs Scheduling Functions Below =========*/
-#ifdef CONFIG_SMP
-
-
-/* performs wrr rq loading balance. */
 static void wrr_rq_load_balance(void)
 {
 	int cpu;
 	int dest_cpu; /* id of cpu to move to */
 	struct rq *rq;
 	struct wrr_rq *lowest_wrr_rq, *highest_wrr_rq, *curr_wrr_rq;
-	struct wrr_sched_entity *heaviest_task_on_highest_wrr_rq;
-	struct wrr_sched_entity *curr_entity;
+	struct sched_wrr_entity *heaviest_task_on_highest_wrr_rq;
+	struct sched_wrr_entity *curr_entity;
 	struct list_head *curr;
 	struct list_head *head;
 	struct task_struct *task_to_move;
@@ -1061,6 +1056,8 @@ static void wrr_rq_load_balance(void)
 	int highest_weight = INT_MIN;
 
 	int largest_weight = INT_MIN; /* used for load imblance issues*/
+
+	curr_entity = NULL;
 
 	for_each_online_cpu(cpu) {
 		rq = cpu_rq(cpu);
@@ -1088,6 +1085,7 @@ static void wrr_rq_load_balance(void)
 		return;
 
 
+
 	/* See if we can do move  */
 	/* Need to make sure that we don't cause a load imbalance */
 	head = &highest_wrr_rq->run_queue.run_list;
@@ -1095,10 +1093,10 @@ static void wrr_rq_load_balance(void)
 		curr_entity = list_entry(curr,
 					struct sched_wrr_entity,
 					run_list);
+
 		if (curr_entity->weight > largest_weight)
 			heaviest_task_on_highest_wrr_rq = curr_entity;
 	}
-
 
 	if (heaviest_task_on_highest_wrr_rq->weight +
 			lowest_wrr_rq->total_weight >=
@@ -1108,9 +1106,7 @@ static void wrr_rq_load_balance(void)
 
 
 	/* Okay, let's move the task */
-	rq_of_lowest_wrr = task_rq(
-				container_of(lowest_wrr_rq,
-						struct task_struct, wrr));
+	rq_of_lowest_wrr = container_of(lowest_wrr_rq, struct rq, wrr);
 	dest_cpu = rq_of_lowest_wrr->cpu;
 	task_to_move = container_of(heaviest_task_on_highest_wrr_rq,
 				    struct task_struct, wrr);
@@ -1120,12 +1116,18 @@ static void wrr_rq_load_balance(void)
 
 	set_task_cpu(task_to_move, dest_cpu);
 	activate_task(rq_of_lowest_wrr , task_to_move, 0);
-
 }
+
+/* ========  Multiple CPUs Scheduling Functions Below =========*/
+#ifdef CONFIG_SMP
+
+
+/* performs wrr rq loading balance. */
+
 
 /* Find the CPU with the lightest load
  * @do_lock indicates if we should lock. */
-static int find_lightest_cpu_runqueue()
+static int find_lightest_cpu_runqueue(void)
 {
 	struct rq *rq;
 	struct wrr_rq *wrr_rq;
