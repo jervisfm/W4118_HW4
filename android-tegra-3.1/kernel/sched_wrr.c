@@ -102,7 +102,7 @@ static int list_size(struct list_head *head)
 }
 
 /*  this is a test hr timer function */
-static enum hrtimer_restart print_current_time()
+static enum hrtimer_restart print_current_time(void)
 {
 	struct timespec now;
 	getnstimeofday(&now);
@@ -1041,9 +1041,8 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 #ifdef CONFIG_SMP
 
 
-
 /* performs wrr rq loading balance. */
-static void wrr_rq_load_balance ()
+static void wrr_rq_load_balance(void)
 {
 	int cpu;
 	int dest_cpu; /* id of cpu to move to */
@@ -1075,14 +1074,13 @@ static void wrr_rq_load_balance ()
 
 			if (curr_wrr_rq->total_weight > highest_weight) {
 				highest_wrr_rq = curr_wrr_rq;
-				highest_weight = curr_wrr_rq->total_weight
+				highest_weight = curr_wrr_rq->total_weight;
 			} else if (curr_wrr_rq->total_weight < lowest_weight) {
 				lowest_wrr_rq = curr_wrr_rq;
 				lowest_weight = curr_wrr_rq->total_weight;
 			} /* else do nothing  */
 		}
-
-		lowest_weight =
+		/* confirm if you don't have to do anything extra */
 		++counter;
 	}
 
@@ -1094,14 +1092,15 @@ static void wrr_rq_load_balance ()
 	/* Need to make sure that we don't cause a load imbalance */
 	head = &highest_wrr_rq->run_queue.run_list;
 	for (curr = head->next; curr != head; curr = curr->next) {
-		curr_entity = list_entry(curr, struct sched_wrr_entity,
+		curr_entity = list_entry(curr,
+					struct sched_wrr_entity,
 					run_list);
 		if (curr_entity->weight > largest_weight)
 			heaviest_task_on_highest_wrr_rq = curr_entity;
 	}
 
 
-	if (heaviest_task_on_highest_wrr_rq.weight +
+	if (heaviest_task_on_highest_wrr_rq->weight +
 			lowest_wrr_rq->total_weight >=
 				highest_wrr_rq->total_weight )
 		/* there is an imbalance issues here */

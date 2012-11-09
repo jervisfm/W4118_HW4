@@ -87,6 +87,10 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/sched.h>
 
+
+/* define our timer */
+static struct hrtimer wrr_rebalance_timer;
+
 /*
  * Convert user-nice values [ -20 ... 0 ... 19 ]
  * to static priority [ MAX_RT_PRIO..MAX_PRIO-1 ],
@@ -571,7 +575,6 @@ struct rq {
 #ifdef CONFIG_SMP
 	int hrtick_csd_pending;
 	struct call_single_data hrtick_csd;
-	static struct hrtimer wrr_rebalance_timer;
 #endif
 	struct hrtimer hrtick_timer;
 #endif
