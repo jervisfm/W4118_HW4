@@ -8024,8 +8024,8 @@ static void init_wrr_rq(struct wrr_rq *wrr_rq)
 	wrr_rq->size = 0;
 	wrr_rq->curr = NULL;
 	wrr_rq->total_weight = 0;
-	spin_lock_init(&(wrr_rq->wrr_rq_lock));
 
+	spin_lock_init(&(wrr_rq->wrr_rq_lock));
 
 	/* Initialize the run queue list */
 	wrr_entity = &wrr_rq->run_queue;

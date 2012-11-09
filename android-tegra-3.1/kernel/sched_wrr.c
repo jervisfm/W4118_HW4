@@ -171,6 +171,7 @@ static void init_task_wrr(struct task_struct *p)
 			wrr_entity->weight * SCHED_WRR_TIME_QUANTUM;
 		wrr_entity->time_left =
 			wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
+
 	}
 
 	/* Initialize the list head just to be safe */
@@ -568,37 +569,6 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	spin_unlock(&wrr_rq->wrr_rq_lock);
 }
 
-
-/* Find the CPU with the lightest load
- * @do_lock indicates if we should lock. */
-static int find_lightest_cpu_runqueue()
-{
-	int cpu, best_cpu, counter, weight;
-	counter = 0;
-	int lowest_weight = INT_MAX;
-	best_cpu = -1; /* assume no best cpu */
-	struct rq *rq;
-	struct wrr_rq *wrr_rq;
-	for_each_online_cpu(cpu) {
-		rq = cpu_rq(cpu);
-		wrr_rq = &rq->wrr;
-		weight = wrr_rq->total_weight;
-
-
-		/* printk("Weight of CPU %d: %u\n", cpu, weight); */
-
-		if (weight < lowest_weight) {
-			lowest_weight = weight;
-			best_cpu = cpu;
-		}
-
-		++counter;
-	}
-
-	/* printk("We found %d Online CPUs\n", counter); */
-
-	return best_cpu;
-}
 
 /* This function is called when a task voluntarily gives up running */
 static void yield_task_wrr (struct rq *rq)
@@ -1024,6 +994,44 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 
 /* ========  Multiple CPUs Scheduling Functions Below =========*/
 #ifdef CONFIG_SMP
+
+/* performs wrr rq loading balance. */
+static void wrr_rq_load_balance ()
+{
+
+}
+
+/* Find the CPU with the lightest load
+ * @do_lock indicates if we should lock. */
+static int find_lightest_cpu_runqueue()
+{
+	int cpu, best_cpu, counter, weight;
+	counter = 0;
+	int lowest_weight = INT_MAX;
+	best_cpu = -1; /* assume no best cpu */
+	struct rq *rq;
+	struct wrr_rq *wrr_rq;
+	for_each_online_cpu(cpu) {
+		rq = cpu_rq(cpu);
+		wrr_rq = &rq->wrr;
+		weight = wrr_rq->total_weight;
+
+
+		/* printk("Weight of CPU %d: %u\n", cpu, weight); */
+
+		if (weight < lowest_weight) {
+			lowest_weight = weight;
+			best_cpu = cpu;
+		}
+
+		++counter;
+	}
+
+	/* printk("We found %d Online CPUs\n", counter); */
+
+	return best_cpu;
+}
+
 
 /* Assumes rq->lock is held */
 static void rq_online_wrr(struct rq *rq)
