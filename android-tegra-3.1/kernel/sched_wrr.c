@@ -998,6 +998,41 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 /* performs wrr rq loading balance. */
 static void wrr_rq_load_balance ()
 {
+	int cpu;
+	struct rq *rq,
+	struct wrr_rq *lowest_wrr_rq, *highest_wrr_rq, *curr_wrr_rq;
+	int counter = 1;
+	int lowest_weight = INT_MAX;
+	int highest_weight = INT_MIN;
+
+	for_each_online_cpu(cpu) {
+		rq = cpu_rq(cpu);
+		curr_wrr_rq = &rq->wrr;
+		if (counter == 1) {
+			lowest_wrr_rq = &rq->wrr;
+			highest_wrr_rq = &rq->wrr;
+			lowest_weight = lowest_wrr_rq->total_weight;
+			highest_weight = highest_wrr_rq->total_weight;
+		} else {
+
+			if (curr_wrr_rq->total_weight > highest_weight) {
+				highest_wrr_rq = curr_wrr_rq;
+				highest_weight = curr_wrr_rq->total_weight
+			} else if (curr_wrr_rq->total_weight < lowest_wegiht) {
+				lowest_wrr_rq = curr_wrr_rq;
+				lowest_weight = curr_wrr_rq->total_weight;
+			} /* else do nothing  */
+		}
+
+		lowest_weight =
+		++counter;
+	}
+
+	if (lowest_wrr_rq == highest_wrr_rq)
+		return;
+
+
+
 
 }
 
