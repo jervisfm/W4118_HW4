@@ -433,7 +433,7 @@ struct wrr_rq {
 	 * It's NULL if nothing is running */
 	struct sched_wrr_entity *curr;
 	/* the total weight of the tasks in this run queue*/
-	unsigned long total_weight;
+	unsigned int total_weight;
 
 };
 

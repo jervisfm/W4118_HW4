@@ -53,7 +53,11 @@
  *
  * May want to try set kthread policy to NORMAL/WRR if have booting issues.
  *
- * for HR timer, want to look at rt_period_timer
+ * for HR timer, want to look at rt_period_timer.
+ *
+ * init_hrtick(); in sched.c
+ *
+ * goe slike sched_init -> smp_sched_init.
  *
  */
 
@@ -155,12 +159,18 @@ static void init_task_wrr(struct task_struct *p)
 	 * or weight is invalid */
 	if (wrr_entity->weight == SCHED_WRR_DEFAULT_WEIGHT ||
 	    !valid_weight(wrr_entity->weight)) {
+
+		printk("Condition 1: %u\n", wrr_entity->weight);
+
 		wrr_entity->weight = SCHED_WRR_DEFAULT_WEIGHT;
+		printk("Condition 1-Post: %u\n", wrr_entity->weight);
 		wrr_entity->time_slice =
 			SCHED_WRR_DEFAULT_WEIGHT * SCHED_WRR_TIME_QUANTUM;
 		wrr_entity->time_left =
 			wrr_entity->time_slice / SCHED_WRR_TICK_FACTOR;
 	} else { /* Use the current weight value */
+		printk("Condition 2 : %u\n", wrr_entity->weight);
+
 		wrr_entity->time_slice =
 			wrr_entity->weight * SCHED_WRR_TIME_QUANTUM;
 		wrr_entity->time_left =
@@ -473,7 +483,15 @@ dequeue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	/* update statistics counts */
 	--wrr_rq->nr_running;
 	--wrr_rq->size;
+
+	printk("Deq Before Weight: %u | %u\n", wrr_rq->total_weight,
+		wrr_entity->weight);
+
 	wrr_rq->total_weight -= wrr_entity->weight;
+
+	printk("Deq After Weight change : %u | %u\n", wrr_rq->total_weight,
+		wrr_entity->weight);
+
 
 	spin_unlock(&wrr_rq->wrr_rq_lock);
 
@@ -523,9 +541,14 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
 	/* update statistics counts */
 	++wrr_rq->nr_running;
 	++wrr_rq->size;
-	wrr_rq->total_weight += wrr_entity->weight;
 
+	printk("Before Weight: %u | %u\n", wrr_rq->total_weight,
+		new_entity->weight);
 
+	wrr_rq->total_weight += new_entity->weight;
+
+	printk("After Weight change : %u | %u\n", wrr_rq->total_weight,
+		new_entity->weight);
 
 	if (strcmp(p->comm,"infinite") == 0) {
 		/* print_queue(&rq->wrr.run_queue);
@@ -547,15 +570,31 @@ enqueue_task_wrr(struct rq *rq, struct task_struct *p, int flags)
  * @do_lock indicates if we should lock. */
 static int find_lightest_cpu_runqueue()
 {
-	int cpu, best_cpu, counter, weight, lowest_weight;
-
+	int cpu, best_cpu, counter, weight;
+	counter = 0;
+	int lowest_weight = SCHED_WRR_MAX_WEIGHT + 1;
+	best_cpu = -1; /* assume no best cpu */
+	struct rq *rq;
+	struct wrr_rq *wrr_rq;
 	for_each_online_cpu(cpu) {
+		rq = cpu_rq(cpu);
+		wrr_rq = &rq->wrr;
+		weight = wrr_rq->total_weight;
+
+
+		printk("Weight of CPU %d: %u\n", cpu, weight);
+
+		if (weight < lowest_weight) {
+			lowest_weight = weight;
+			best_cpu = cpu;
+		}
+
 		++counter;
 	}
 
 	printk("We found %d Online CPUs\n", counter);
 
-	return 0;
+	return best_cpu;
 }
 
 /* This function is called when a task voluntarily gives up running */
@@ -613,7 +652,7 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 	update_curr_wrr(rq);
 
 	if (strcmp(curr->comm, "AudioCache call") == 0) {
-		printk("Turns left %d\n",
+		printk("Turns left %ld\n",
 			wrr_entity->time_left - 1);
 	}
 
@@ -1046,7 +1085,18 @@ static void task_woken_wrr(struct rq *rq, struct task_struct *p)
 static int
 select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 {
-	return task_cpu(p); /* wrr tasks as never migrated */
+	/* find lightest returns -1 on error */
+	int lowest_cpu = find_lightest_cpu_runqueue();
+
+	if (lowest_cpu == -1) {
+		printk("Warning: find lightest cpu failed ... \n");
+		return task_cpu(p); /* */
+	}
+	else {
+		printk("Choosing Lowest CPU: %d\n", lowest_cpu);
+		return lowest_cpu;
+	}
+
 }
 
 #endif /* CONFIG_SMP */
