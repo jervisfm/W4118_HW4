@@ -571,6 +571,7 @@ struct rq {
 #ifdef CONFIG_SMP
 	int hrtick_csd_pending;
 	struct call_single_data hrtick_csd;
+	static struct hrtimer wrr_rebalance_timer;
 #endif
 	struct hrtimer hrtick_timer;
 #endif
@@ -7979,6 +7980,9 @@ void __init sched_init_smp(void)
 
 	init_hrtick();
 
+	/* start my own wrr rebalnce timer */
+
+
 	/* Move init over to a non-isolated CPU */
 	if (set_cpus_allowed_ptr(current, non_isolated_cpus) < 0)
 		BUG();
@@ -8035,6 +8039,8 @@ static void init_wrr_rq(struct wrr_rq *wrr_rq)
 	wrr_entity->weight = 0;
 	wrr_entity->time_slice = 0;
 	wrr_entity->time_left = 0;
+
+
 }
 
 static void init_rt_rq(struct rt_rq *rt_rq, struct rq *rq)
@@ -8168,6 +8174,10 @@ void __init sched_init(void)
 
 #ifdef CONFIG_SMP
 	init_defrootdomain();
+
+	/* lets initialize our timer */
+	hrtimer_init(&wrr_rebalance_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	wrr_rebalance_timer.function = print_current_time;
 #endif
 
 	init_rt_bandwidth(&def_rt_bandwidth,

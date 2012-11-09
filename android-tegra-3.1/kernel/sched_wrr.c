@@ -59,6 +59,18 @@
  *
  * goe slike sched_init -> smp_sched_init.
  *
+ * my timer is 'wrr_rebalance_timer'
+ * # Line 8176 in sched.c is also has my code changes.
+ *
+ *
+ * ktime - use a function
+ *
+ * hrtimer_start
+ * hrtierm_ forward -> tick thing
+ *
+ * hrtimer_forward_now use this instead.
+ *
+ * return HRTIMER_RESTART
  */
 
 /* Forward declaration. Definition found at bottom of this file */
@@ -87,6 +99,18 @@ static int list_size(struct list_head *head)
 		++count;
 	}
 	return count;
+}
+
+/*  this is a test hr timer function */
+static int print_current_time()
+{
+	struct timespec now;
+	getnstimeofday(&now);
+
+	printk("Test Time: second=%ld\nnano_second=%ld\n",
+				now.tv_sec, now.tv_nsec);
+	printk("\n");
+
 }
 
 /* Debugging helper method */
@@ -617,6 +641,8 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 {
 	/* Still to be tested  */
+	ktime_t now;
+	ktime_t delta;
 	struct sched_wrr_entity *wrr_entity = &curr->wrr;
 	struct timespec now;
 	getnstimeofday(&now);
@@ -628,6 +654,12 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 		printk("Turns left %ld\n",
 			wrr_entity->time_left - 1);
 	}
+
+
+	/* let's move the timer forward */
+	now = hrtimer_cb_get_time(&wrr_rebalance_timer);
+	delta = 10;
+	hrtimer_forward(&wrr_rebalance_timer, now, rt_b->rt_period);
 
 
 	/*
