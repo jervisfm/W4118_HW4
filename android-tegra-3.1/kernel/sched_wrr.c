@@ -650,10 +650,10 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 
 
 	#ifdef CONFIG_SMP
-		ktime_t period_interval_ktime;
-		struct timespec period =
-			{ .tv_nsec = SCHED_WRR_REBALANCE_TIME_PERIOD_NS,
-					.tv_sec = 0};
+		//ktime_t period_interval_ktime;
+		//struct timespec period =
+		//	{ .tv_nsec = SCHED_WRR_REBALANCE_TIME_PERIOD_NS,
+		//			.tv_sec = 0};
 	#endif
 
 	struct sched_wrr_entity *wrr_entity = &curr->wrr;
@@ -670,10 +670,10 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 
 	#ifdef CONFIG_SMP
 	/* let's move the timer forward */
-		period_interval_ktime = timespec_to_ktime(period);
-		hrtimer_forward_now(&wrr_rebalance_timer,
-				period_interval_ktime);
+		//period_interval_ktime = timespec_to_ktime(period);
+		//hrtimer_forward_now(&wrr_rebalance_timer,period_interval_ktime);
 	#endif
+
 
 	/*
 	 * each tick is worth 10 milliseconds.
