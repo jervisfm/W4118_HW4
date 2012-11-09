@@ -1100,6 +1100,12 @@ select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 		return lowest_cpu;
 	}
 
+	/*
+	 * TODO:
+	 * Check for cpu affinity.
+	 *
+	 */
+
 }
 
 #endif /* CONFIG_SMP */
