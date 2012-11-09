@@ -636,6 +636,9 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 	*/
 }
 
+#ifdef CONFIG_SMP
+
+#endif
 
 /* This function is mostly called from time tick functions; it might lead to
    process switch.  This drives the running preemption. It is called
@@ -643,11 +646,15 @@ static void put_prev_task_wrr(struct rq *rq, struct task_struct *prev)
 static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 {
 	/* Still to be tested  */
-	ktime_t period_interval_ktime;
 	struct timespec now;
-	struct timespec period =
-		{ .tv_nsec = SCHED_WRR_REBALANCE_TIME_PERIOD_NS, .tv_sec = 0};
 
+
+	#ifdef CONFIG_SMP
+		ktime_t period_interval_ktime;
+		struct timespec period =
+			{ .tv_nsec = SCHED_WRR_REBALANCE_TIME_PERIOD_NS,
+					.tv_sec = 0};
+	#endif
 
 	struct sched_wrr_entity *wrr_entity = &curr->wrr;
 
@@ -661,11 +668,12 @@ static void task_tick_wrr(struct rq *rq, struct task_struct *curr, int queued)
 			wrr_entity->time_left - 1);
 	}
 
-
+	#ifdef CONFIG_SMP
 	/* let's move the timer forward */
-	period_interval_ktime = timespec_to_ktime(period);
-	hrtimer_forward_now(&wrr_rebalance_timer, period_interval_ktime);
-
+		period_interval_ktime = timespec_to_ktime(period);
+		hrtimer_forward_now(&wrr_rebalance_timer,
+				period_interval_ktime);
+	#endif
 
 	/*
 	 * each tick is worth 10 milliseconds.
@@ -1032,22 +1040,14 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 /* ========  Multiple CPUs Scheduling Functions Below =========*/
 #ifdef CONFIG_SMP
 
-static int can_do_move(struct wrr_rq *highest_wrr_rq,
-			struct wrr_rq *lowest_wrr_rq) {
 
-	if (highest_wrr_rq == NULL || lowest_wrr_rq == NULL)
-		return;
-
-
-
-}
 
 /* performs wrr rq loading balance. */
 static void wrr_rq_load_balance ()
 {
 	int cpu;
 	int dest_cpu; /* id of cpu to move to */
-	struct rq *rq,
+	struct rq *rq;
 	struct wrr_rq *lowest_wrr_rq, *highest_wrr_rq, *curr_wrr_rq;
 	struct wrr_sched_entity *heaviest_task_on_highest_wrr_rq;
 	struct wrr_sched_entity *curr_entity;
@@ -1076,7 +1076,7 @@ static void wrr_rq_load_balance ()
 			if (curr_wrr_rq->total_weight > highest_weight) {
 				highest_wrr_rq = curr_wrr_rq;
 				highest_weight = curr_wrr_rq->total_weight
-			} else if (curr_wrr_rq->total_weight < lowest_wegiht) {
+			} else if (curr_wrr_rq->total_weight < lowest_weight) {
 				lowest_wrr_rq = curr_wrr_rq;
 				lowest_weight = curr_wrr_rq->total_weight;
 			} /* else do nothing  */
@@ -1128,12 +1128,13 @@ static void wrr_rq_load_balance ()
  * @do_lock indicates if we should lock. */
 static int find_lightest_cpu_runqueue()
 {
-	int cpu, best_cpu, counter, weight;
-	counter = 0;
-	int lowest_weight = INT_MAX;
-	best_cpu = -1; /* assume no best cpu */
 	struct rq *rq;
 	struct wrr_rq *wrr_rq;
+	int cpu, best_cpu, counter, weight;
+	int lowest_weight = INT_MAX;
+	counter = 0;
+
+	best_cpu = -1; /* assume no best cpu */
 	for_each_online_cpu(cpu) {
 		rq = cpu_rq(cpu);
 		wrr_rq = &rq->wrr;
