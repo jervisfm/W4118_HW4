@@ -1066,10 +1066,14 @@ static void wrr_rq_load_balance(void)
 
 	curr_entity = NULL;
 
-	spin_lock(&LOAD_BALANCE_LOCK);
+	//spin_lock(&LOAD_BALANCE_LOCK);
 
+	printk("Traversing cpu to find highest load\n");
 	for_each_online_cpu(cpu) {
 		rq = cpu_rq(cpu);
+		if (rq == NULL)
+			continue;
+
 		curr_wrr_rq = &rq->wrr;
 		if (curr_wrr_rq->total_weight > highest_weight) {
 			highest_wrr_rq = curr_wrr_rq;
@@ -1084,10 +1088,10 @@ static void wrr_rq_load_balance(void)
 	}
 
 	if (lowest_wrr_rq == highest_wrr_rq) {
-		spin_unlock(&LOAD_BALANCE_LOCK);
+		//spin_unlock(&LOAD_BALANCE_LOCK);
 		return;
 	}
-
+	printk("Looking for heavist task\n");
 	/* See if we can do move  */
 	/* Need to make sure that we don't cause a load imbalance */
 	head = &highest_wrr_rq->run_queue.run_list;
@@ -1108,10 +1112,10 @@ static void wrr_rq_load_balance(void)
 			lowest_wrr_rq->total_weight >=
 				highest_wrr_rq->total_weight )
 		/* there is an imbalance issues here */ {
-		spin_unlock(&LOAD_BALANCE_LOCK);
+		//spin_unlock(&LOAD_BALANCE_LOCK);
 		return;
 	}
-
+	printk("About to begin task migration\n");
 	/* Okay, let's move the task */
 	rq_of_lowest_wrr = container_of(lowest_wrr_rq, struct rq, wrr);
 	dest_cpu = rq_of_lowest_wrr->cpu;
@@ -1124,7 +1128,7 @@ static void wrr_rq_load_balance(void)
 	set_task_cpu(task_to_move, dest_cpu);
 	activate_task(rq_of_lowest_wrr , task_to_move, 0);
 
-	spin_unlock(&LOAD_BALANCE_LOCK);
+	//spin_unlock(&LOAD_BALANCE_LOCK);
 }
 
 /* Find the CPU with the lightest load
