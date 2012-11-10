@@ -3,9 +3,13 @@ Scheduler Testing:
 
 Emulator
 ---------
-We tested our scheduler from user land as we were able to get to work there. So essentially, the environment we created was the following: 5 infinite loop do nothing programs with a weight of 10, and then 1 prime factorization program with varibale weights. 
+We tested our scheduler from user land as we were able to get to work there.
+So essentially, the environment we created was the following: 5 infinite loop
+do nothing programs with a weight of 10, and then 1 prime factorization program
+with varibale weights. 
 
-The number we choose to factor was 1234567 because it took resonably well running on the emulator running on my machine (not too short or too long). 
+The number we choose to factor was 1234567 because it took resonably well
+running on the emulator running on my machine (not too short or too long). 
 
 The results of testing are presented below: 
 
@@ -34,7 +38,11 @@ Weight, Time to factor 1234567:
 
 Please find the graph in plot.pdf under the header Emulator Graph. 
 
-
+Obviously, these numbers seem incorrect. Even as the deadline approaches, we
+are frantically trying to figure out why it seems that the weights don't make
+any difference in the result. The expected result is that as the weight
+increases, the execution time should go down, since the process is being
+granted longer quantums.
 
 Nexus 7 Device
 --------------
