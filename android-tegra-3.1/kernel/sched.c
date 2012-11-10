@@ -8185,7 +8185,7 @@ void __init sched_init(void)
 
 	/* lets initialize our timer */
 	hrtimer_init(&wrr_rebalance_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	wrr_rebalance_timer.function = wrr_rq_load_balance;
+	wrr_rebalance_timer.function = print_current_time;
 #endif
 
 	init_rt_bandwidth(&def_rt_bandwidth,

@@ -84,6 +84,8 @@ static DEFINE_SPINLOCK(SET_WEIGHT_LOCK);
 
 #ifdef CONFIG_SMP
 
+static void wrr_rq_load_balance(void);
+
 /* Define locks needed for SMP case */
 static DEFINE_SPINLOCK(LOAD_BALANCE_LOCK);
 
@@ -109,10 +111,8 @@ static enum hrtimer_restart print_current_time(struct hrtimer* timer)
 	struct timespec period = 
 		{ .tv_nsec = SCHED_WRR_REBALANCE_TIME_PERIOD_NS, .tv_sec = 0};
 	period_ktime = timespec_to_ktime(period);
-	getnstimeofday(&now);
-	printk("Test Time: second=%ld\nnano_second=%ld\n",
-				now.tv_sec, now.tv_nsec);
-	printk("\n");
+
+	wrr_rq_load_balance();
 	hrtimer_forward(timer, timer->base->get_time(), period_ktime);
 	return HRTIMER_RESTART;
 }
