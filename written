@@ -47,6 +47,10 @@ granted longer quantums.
 Another possibility is that, maybe, the user land timing code is causing these 
 problems, while WRR actually is working correctly. 
 
+UPDATE: Now, we have checked the time slices, and the time slices seem to be
+setting correctly. So, it is less likely that it's the WRR's problem, some
+other user land problem.
+
 Nexus 7 Device
 --------------
 Testing the scheduler on the actual device, we saw the following times:
