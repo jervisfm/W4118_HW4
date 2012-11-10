@@ -1091,8 +1091,10 @@ static void wrr_rq_load_balance(void)
 					struct sched_wrr_entity,
 					run_list);
 
-		if (curr_entity->weight > largest_weight)
+		if (curr_entity->weight > largest_weight) {
 			heaviest_task_on_highest_wrr_rq = curr_entity;
+			largest_weight = curr_entity->weight;
+		}
 	}
 
 	if (heaviest_task_on_highest_wrr_rq->weight +
