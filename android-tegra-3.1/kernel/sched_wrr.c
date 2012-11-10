@@ -18,7 +18,6 @@ static DEFINE_SPINLOCK(LOAD_BALANCE_LOCK);
 /* We didn't have time to rename this function. */
 static enum hrtimer_restart print_current_time(struct hrtimer *timer)
 {
-	struct timespec now;
 	ktime_t period_ktime;
 	struct timespec period = {
 		.tv_nsec = SCHED_WRR_REBALANCE_TIME_PERIOD_NS,
