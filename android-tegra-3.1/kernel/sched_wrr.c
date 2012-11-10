@@ -1,4 +1,4 @@
-
+/*
  * sched_wrr.c
  *
  *  Created on: Oct 28, 2012
@@ -1074,6 +1074,7 @@ static void wrr_rq_load_balance(void)
 		if (curr_wrr_rq->total_weight > highest_weight) {
 			highest_wrr_rq = curr_wrr_rq;
 			highest_weight = curr_wrr_rq->total_weight;
+		}
 		if (curr_wrr_rq->total_weight < lowest_weight) {
 			lowest_wrr_rq = curr_wrr_rq;
 			lowest_weight = curr_wrr_rq->total_weight;
@@ -1087,13 +1088,10 @@ static void wrr_rq_load_balance(void)
 		return;
 	}
 
-
-
-
 	/* See if we can do move  */
 	/* Need to make sure that we don't cause a load imbalance */
 	head = &highest_wrr_rq->run_queue.run_list;
-	spin_lock(&highest_wrr_rq.wrr_rq_lock);
+	spin_lock(&highest_wrr_rq->wrr_rq_lock);
 	for (curr = head->next; curr != head; curr = curr->next) {
 		curr_entity = list_entry(curr,
 					struct sched_wrr_entity,
@@ -1104,7 +1102,7 @@ static void wrr_rq_load_balance(void)
 			largest_weight = curr_entity->weight;
 		}
 	}
-	spin_unlock(&highest_wrr_rq.wrr_rq_lock);
+	spin_unlock(&highest_wrr_rq->wrr_rq_lock);
 
 	if (heaviest_task_on_highest_wrr_rq->weight +
 			lowest_wrr_rq->total_weight >=
