@@ -12,12 +12,10 @@ int main(int argc, char **argv)
 {
 	printf("Hello World");
 	long counter = 0;
-	while(1) {
+	while (1) {
 		++counter;
 
 		sleep(1);
-		/* printf("%ld\n", counter); */
-
-
+		printf("%ld\n", counter);
 	}
 }

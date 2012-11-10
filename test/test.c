@@ -84,37 +84,37 @@ static char *get_policy_name(int policy)
 	switch (policy) {
 		case SCHED_NORMAL:{
 			char *s = "CFS: Normal";
-			strncpy(result,s,strlen(s));
+			strncpy(result, s, strlen(s));
 			break;
 		}
 		case SCHED_FIFO:{
 			char *s = "RT: FIFO";
-			strncpy(result,s,strlen(s));
+			strncpy(result, s, strlen(s));
 			break;
 		}
 		case SCHED_RR:{
 			char *s = "RT: Round Robin";
-			strncpy(result,s,strlen(s));
+			strncpy(result, s, strlen(s));
 			break;
 		}
 		case SCHED_BATCH:{
 			char *s = "CFS: Batch";
-			strncpy(result,s,strlen(s));
+			strncpy(result, s, strlen(s));
 			break;
 		}
 		case SCHED_IDLE:{
 			char *s = "CFS: Idle";
-			strncpy(result,s,strlen(s));
+			strncpy(result, s, strlen(s));
 			break;
 		}
 		case SCHED_WRR:{
 			char *s = "Custom: Weighted Round Robin";
-			strncpy(result,s,strlen(s));
+			strncpy(result, s, strlen(s));
 			break;
 		}
 		default: {
 			char *s = "Unknown Policy";
-			strncpy(result,s,strlen(s));
+			strncpy(result, s, strlen(s));
 			break;
 		}
 	}
@@ -125,7 +125,7 @@ static void start_timer()
 {
 	int ret;
 	ret = gettimeofday(&start_time, NULL);
-	if (ret != 0 )
+	if (ret != 0)
 		return perror("Warning: GetTime in start_time() failed!");
 }
 /* Returns the number of seconds that have elapsed
@@ -244,7 +244,7 @@ static void graph_test(mpz_t number)
 	int i = 0;
 	FILE *file = fopen("/data/misc/results.txt", "w");
 	for (i = MIN_WEIGHT; i <= MAX_WEIGHT; i++) {
-		set_weight(0,i);
+		set_weight(0, i);
 		printf("Graph Test: Weight = %d\n", i);
 		start_timer();
 		find_factors(number);
@@ -261,7 +261,7 @@ static void test_looping()
 {
 	int i = 0;
 	int MAX =  100;
-	for (i =0; i < MAX; ++i) {
+	for (i = 0; i < MAX; ++i) {
 		sleep(1);
 		printf("%d\n", i);
 	}
@@ -279,7 +279,7 @@ static void do_nothing()
 
 }
 
-static void test(mpz_t number, const char* weight_string)
+static void test(mpz_t number, const char *weight_string)
 {
 	double run_time;
 	char c;
