@@ -105,14 +105,16 @@ static int list_size(struct list_head *head)
 static enum hrtimer_restart print_current_time(struct hrtimer* timer)
 {
 	struct timespec now;
+	ktime_t period_ktime;
+	struct timespec period = 
+		{ .tv_nsec = SCHED_WRR_REBALANCE_TIME_PERIOD_NS, .tv_sec = 0};
+	period_ktime = timespec_to_ktime(period);
 	getnstimeofday(&now);
-	/*
 	printk("Test Time: second=%ld\nnano_second=%ld\n",
 				now.tv_sec, now.tv_nsec);
-	printk("\n");*/
-
+	printk("\n");
+	hrtimer_forward(timer, timer->base->get_time(), period_ktime);
 	return HRTIMER_RESTART;
-
 }
 
 /* Debugging helper method */
