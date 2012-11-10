@@ -85,7 +85,7 @@ static DEFINE_SPINLOCK(SET_WEIGHT_LOCK);
 #ifdef CONFIG_SMP
 
 /* Define locks needed for SMP case */
-
+static DEFINE_SPINLOCK(LOAD_BALANCE_LOCK);
 
 #endif /* CONFIG_SMP */
 
@@ -1064,6 +1064,8 @@ static void wrr_rq_load_balance(void)
 
 	curr_entity = NULL;
 
+	spin_lock(&LOAD_BALANCE_LOCK);
+
 	for_each_online_cpu(cpu) {
 		rq = cpu_rq(cpu);
 		curr_wrr_rq = &rq->wrr;
@@ -1078,14 +1080,18 @@ static void wrr_rq_load_balance(void)
 		++counter;
 	}
 
-	if (lowest_wrr_rq == highest_wrr_rq)
+	if (lowest_wrr_rq == highest_wrr_rq) {
+		spin_unlock(&LOAD_BALANCE_LOCK);
 		return;
+	}
+
 
 
 
 	/* See if we can do move  */
 	/* Need to make sure that we don't cause a load imbalance */
 	head = &highest_wrr_rq->run_queue.run_list;
+	spin_lock(&highest_wrr_rq.wrr_rq_lock);
 	for (curr = head->next; curr != head; curr = curr->next) {
 		curr_entity = list_entry(curr,
 					struct sched_wrr_entity,
@@ -1096,13 +1102,15 @@ static void wrr_rq_load_balance(void)
 			largest_weight = curr_entity->weight;
 		}
 	}
+	spin_unlock(&highest_wrr_rq.wrr_rq_lock);
 
 	if (heaviest_task_on_highest_wrr_rq->weight +
 			lowest_wrr_rq->total_weight >=
 				highest_wrr_rq->total_weight )
-		/* there is an imbalance issues here */
+		/* there is an imbalance issues here */ {
+		spin_unlock(&LOAD_BALANCE_LOCK);
 		return;
-
+	}
 
 	/* Okay, let's move the task */
 	rq_of_lowest_wrr = container_of(lowest_wrr_rq, struct rq, wrr);
@@ -1115,6 +1123,8 @@ static void wrr_rq_load_balance(void)
 
 	set_task_cpu(task_to_move, dest_cpu);
 	activate_task(rq_of_lowest_wrr , task_to_move, 0);
+
+	spin_unlock(&LOAD_BALANCE_LOCK);
 }
 
 /* Find the CPU with the lightest load
@@ -1213,6 +1223,9 @@ static void task_woken_wrr(struct rq *rq, struct task_struct *p)
 static int
 select_task_rq_wrr(struct task_struct *p, int sd_flag, int flags)
 {
+
+	//return task_cpu(p);
+
 	/* find lightest returns -1 on error */
 	int lowest_cpu = find_lightest_cpu_runqueue();
 
