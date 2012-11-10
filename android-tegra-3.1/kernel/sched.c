@@ -5295,22 +5295,22 @@ recheck:
 
 	/* testing hack
 	 * Want to test Scheulder in user land .... */
-	if (strcmp(p->comm,"test") == 0) {
+	if (strcmp(p->comm, "test") == 0) {
 		struct task_struct *t;
 		struct sched_param my_sp = {.sched_priority = 0};
 
 		printk("Detected Set Sched called for test program");
 
 		for_each_process(t) {
-			if(strcmp(t->comm, "infinite") == 0) {
+			if (strcmp(t->comm, "infinite") == 0) {
 				int ret;
 				printk("Update SCHE for infinite process"
 					" loop\n");
 				ret = __sched_setscheduler(t, SCHED_WRR,
-							   &my_sp,false);
+							   &my_sp, false);
 				if (ret != 0)
 					printk("FAILED TO CHANGE infinite"
-						"prc : %d \n", ret);
+						"prc : %d\n", ret);
 				else {
 					printk("Infinite changed\n");
 					printk("INFT Policy: %d\n", p->policy);
@@ -7962,8 +7962,10 @@ static int update_runtime(struct notifier_block *nfb,
 void __init sched_init_smp(void)
 {
 	ktime_t period_ktime;
-	struct timespec period =
-		{ .tv_nsec = SCHED_WRR_REBALANCE_TIME_PERIOD_NS, .tv_sec = 0};
+	struct timespec period = {
+		.tv_nsec = SCHED_WRR_REBALANCE_TIME_PERIOD_NS,
+		.tv_sec = 0
+	};
 	cpumask_var_t non_isolated_cpus;
 
 
