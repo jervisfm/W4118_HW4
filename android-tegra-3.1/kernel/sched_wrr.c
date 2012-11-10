@@ -106,10 +106,10 @@ static enum hrtimer_restart print_current_time(struct hrtimer* timer)
 {
 	struct timespec now;
 	getnstimeofday(&now);
-
+	/*
 	printk("Test Time: second=%ld\nnano_second=%ld\n",
 				now.tv_sec, now.tv_nsec);
-	printk("\n");
+	printk("\n");*/
 
 	return HRTIMER_RESTART;
 

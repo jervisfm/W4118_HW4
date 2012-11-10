@@ -7961,10 +7961,11 @@ static int update_runtime(struct notifier_block *nfb,
 
 void __init sched_init_smp(void)
 {
+	ktime_t period_ktime;
 	struct timespec period =
 		{ .tv_nsec = SCHED_WRR_REBALANCE_TIME_PERIOD_NS, .tv_sec = 0};
 	cpumask_var_t non_isolated_cpus;
-	ktime_t period_ktime;
+
 
 	alloc_cpumask_var(&non_isolated_cpus, GFP_KERNEL);
 	alloc_cpumask_var(&fallback_doms, GFP_KERNEL);
@@ -7987,8 +7988,8 @@ void __init sched_init_smp(void)
 	init_hrtick();
 
 	/* start my own wrr rebalance timer */
-	//period_ktime = timespec_to_ktime(period);
-	//hrtimer_start(&wrr_rebalance_timer, period_ktime, HRTIMER_MODE_REL);
+	period_ktime = timespec_to_ktime(period);
+	hrtimer_start(&wrr_rebalance_timer, period_ktime, HRTIMER_MODE_REL);
 
 	/* Move init over to a non-isolated CPU */
 	if (set_cpus_allowed_ptr(current, non_isolated_cpus) < 0)
