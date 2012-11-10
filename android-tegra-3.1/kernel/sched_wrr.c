@@ -1,4 +1,4 @@
-/*
+
  * sched_wrr.c
  *
  *  Created on: Oct 28, 2012
@@ -1067,20 +1067,12 @@ static void wrr_rq_load_balance(void)
 	for_each_online_cpu(cpu) {
 		rq = cpu_rq(cpu);
 		curr_wrr_rq = &rq->wrr;
-		if (counter == 1) {
-			lowest_wrr_rq = &rq->wrr;
-			highest_wrr_rq = &rq->wrr;
-			lowest_weight = lowest_wrr_rq->total_weight;
-			highest_weight = highest_wrr_rq->total_weight;
-		} else {
-
-			if (curr_wrr_rq->total_weight > highest_weight) {
-				highest_wrr_rq = curr_wrr_rq;
-				highest_weight = curr_wrr_rq->total_weight;
-			} else if (curr_wrr_rq->total_weight < lowest_weight) {
-				lowest_wrr_rq = curr_wrr_rq;
-				lowest_weight = curr_wrr_rq->total_weight;
-			} /* else do nothing  */
+		if (curr_wrr_rq->total_weight > highest_weight) {
+			highest_wrr_rq = curr_wrr_rq;
+			highest_weight = curr_wrr_rq->total_weight;
+		if (curr_wrr_rq->total_weight < lowest_weight) {
+			lowest_wrr_rq = curr_wrr_rq;
+			lowest_weight = curr_wrr_rq->total_weight;
 		}
 		/* confirm if you don't have to do anything extra */
 		++counter;
