@@ -1037,6 +1037,11 @@ SYSCALL_DEFINE1(sched_getweight, pid_t, pid)
 	return result;
 }
 
+/* ========  Multiple CPUs Scheduling Functions Below =========*/
+#ifdef CONFIG_SMP
+
+
+/* performs wrr rq loading balance. */
 static void wrr_rq_load_balance(void)
 {
 	int cpu;
@@ -1117,13 +1122,6 @@ static void wrr_rq_load_balance(void)
 	set_task_cpu(task_to_move, dest_cpu);
 	activate_task(rq_of_lowest_wrr , task_to_move, 0);
 }
-
-/* ========  Multiple CPUs Scheduling Functions Below =========*/
-#ifdef CONFIG_SMP
-
-
-/* performs wrr rq loading balance. */
-
 
 /* Find the CPU with the lightest load
  * @do_lock indicates if we should lock. */
