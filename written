@@ -44,6 +44,9 @@ any difference in the result. The expected result is that as the weight
 increases, the execution time should go down, since the process is being
 granted longer quantums.
 
+Another possibility is that, maybe, the user land timing code is causing these 
+problems, while WRR actually is working correctly. 
+
 Nexus 7 Device
 --------------
 Testing the scheduler on the actual device, we saw the following times:
